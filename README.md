@@ -14,6 +14,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/github/license/RaunakxShrivastva/Raven-Island?color=blue" alt="License: MIT"/></a>
   <a href="https://www.rust-lang.org/"><img src="https://img.shields.io/badge/rust-1.80%2B-orange?logo=rust" alt="Rust Version"/></a>
   <a href="https://github.com/RaunakxShrivastva/Raven-Island/stargazers"><img src="https://img.shields.io/github/stars/RaunakxShrivastva/Raven-Island?style=social" alt="Stars"/></a>
+  <a href="https://github.com/sponsors/RaunakxShrivastva"><img src="https://img.shields.io/badge/Sponsor-%E2%9D%A4-pink?logo=github" alt="Sponsor"/></a>
 </p>
 
 <p align="center">
@@ -314,4 +315,14 @@ Copyright (c) 2026 Raunak Shrivastava
 
 <p align="center">
   Made with ❤️ for Windows power users
+</p>
+
+---
+
+<p align="center">
+  <img src="https://img.shields.io/github/topics/RaunakxShrivastva/Raven-Island?style=flat-square" alt="Topics"/>
+</p>
+
+<p align="center">
+  <strong>Topics:</strong> rust, windows, overlay, slint, dynamic-island, system-tray, media-control, widget-engine
 </p>
