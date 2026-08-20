@@ -1,0 +1,102 @@
+export component CapturePanel inherits HorizontalLayout {
+    callback trigger-screenshot();
+    callback trigger-region-screenshot();
+    callback open-settings();
+
+    spacing: 24px;
+    height: 100%;
+
+    VerticalLayout {
+        alignment: center;
+        spacing: 12px;
+        width: 320px;
+
+        Text {
+            text: "SCREENSHOT STUDIO";
+            font-size: 10px;
+            font-weight: 900;
+            color: rgba(255, 255, 255, 0.4);
+            letter-spacing: 1px;
+        }
+        HorizontalLayout {
+            spacing: 12px;
+
+            TouchArea {
+                clicked => { root.trigger-screenshot(); }
+                Rectangle {
+                    width: 140px;
+                    height: 38px;
+                    border-radius: 10px;
+                    background: rgba(255, 255, 255, 0.05);
+                    border-width: 1px;
+                    border-color: rgba(255, 255, 255, 0.1);
+
+                    HorizontalLayout {
+                        alignment: center;
+                        spacing: 8px;
+                        Text { text: "📸"; font-size: 14px; }
+                        Text { text: "Full Screen"; font-size: 12px; font-weight: 800; color: white; }
+                    }
+                }
+            }
+            TouchArea {
+                clicked => { root.trigger-region-screenshot(); }
+                Rectangle {
+                    width: 140px;
+                    height: 38px;
+                    border-radius: 10px;
+                    background: rgba(255, 255, 255, 0.05);
+                    border-width: 1px;
+                    border-color: rgba(255, 255, 255, 0.1);
+
+                    HorizontalLayout {
+                        alignment: center;
+                        spacing: 8px;
+                        Text { text: "✂"; font-size: 14px; }
+                        Text { text: "Area Crop"; font-size: 12px; font-weight: 800; color: white; }
+                    }
+                }
+            }
+        }
+    }
+
+    Rectangle {
+        width: 1px;
+        background: rgba(255, 255, 255, 0.08);
+        height: 120px;
+        y: (parent.height - self.height) / 2;
+    }
+
+    VerticalLayout {
+        alignment: center;
+        spacing: 10px;
+
+        Text {
+            text: "CAPTURE UTILITIES";
+            font-size: 10px;
+            font-weight: 900;
+            color: rgba(255, 255, 255, 0.4);
+            letter-spacing: 1px;
+        }
+        TouchArea {
+            clicked => { root.open-settings(); }
+            Rectangle {
+                width: 160px;
+                height: 34px;
+                border-radius: 8px;
+                background: rgba(0, 102, 255, 0.15);
+                border-width: 1px;
+                border-color: rgba(0, 102, 255, 0.3);
+
+                Text {
+                    text: "📁 Open Folder";
+                    font-size: 11px;
+                    font-weight: 800;
+                    color: #00E5FF;
+                    vertical-alignment: center;
+                    horizontal-alignment: center;
+                }
+            }
+        }
+    }
+}

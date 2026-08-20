@@ -1,0 +1,1865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-2ZMW6ZX9SS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-2ZMW6ZX9SS');
+  </script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Raven Notch — The Dynamic Notch Windows Deserved</title>
+  <meta name="description" content="A native, ultra-lightweight overlay that transforms your desktop into a living Dynamic Island. Start a 14-day trial, then unlock lifetime access." />
+  <meta property="og:title" content="Raven Notch — The Dynamic Notch Windows Deserved" />
+  <meta property="og:description" content="9 native modules, zero bloat. Live music, system stats, drop shelf, calendar, and more." />
+  <meta property="og:type" content="website" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="icon" type="image/png" href="assets/app_logo.png?v=1" />
+  <link rel="shortcut icon" type="image/png" href="assets/app_logo.png?v=1" />
+  <link rel="apple-touch-icon" href="assets/app_logo.png?v=1" />
+  <link rel="stylesheet" href="style.css?v=1.0.22" />
+</head>
+<body>
+
+  <!-- ============================================================
+       LOADING SCREEN
+  ============================================================ -->
+  <div class="loading-screen" id="loadingScreen">
+    <div class="loading-logo">
+      <img src="logo.svg" alt="Raven Notch Logo" class="loading-logo-img" />
+    </div>
+    <div class="loading-progress-container">
+      <div class="loading-progress-bar" id="loadingProgressBar"></div>
+    </div>
+    <div class="loading-text">Loading Raven Notch...</div>
+  </div>
+
+  <!-- ============================================================
+       NAVIGATION
+  ============================================================ -->
+  <nav class="nav" id="nav">
+    <div class="nav-inner">
+      <a href="#" class="nav-logo" aria-label="Raven Notch Home">
+        <img src="logo.svg" alt="Raven Notch Logo" class="nav-logo-img" />
+        <span class="nav-logo-text">Raven Notch</span>
+      </a>
+      <div class="nav-links">
+        <a href="#" class="nav-link active" id="navHome">Home</a>
+        <a href="#features" class="nav-link">Features</a>
+        <a href="#download" class="nav-link">FAQ</a>
+        <a href="privacy" class="nav-link" id="navPrivacy">Privacy Policy</a>
+        <a href="terms" class="nav-link" id="navTerms">Terms of Service</a>
+        <a href="#" class="nav-link" id="navChangelog">Changelog</a>
+        <a href="#" class="nav-link" id="navFeedback">Feedback</a>
+      </div>
+      <div class="nav-actions">
+        <button class="nav-login-btn" id="navLogin" type="button">Log in</button>
+        <a href="Raven-Notch.exe" download class="btn-primary nav-cta" id="navCta">
+          <span class="btn-text-wrap">
+            <span class="btn-text">Download Trial</span>
+            <span class="btn-text">Download Trial</span>
+          </span>
+        </a>
+      </div>
+      <button class="nav-hamburger" id="navHamburger" aria-label="Toggle navigation">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div class="nav-mobile-menu" id="navMobileMenu">
+      <div class="nav-mobile-links">
+        <a href="#" class="nav-link active" id="mobileHome">Home</a>
+        <a href="#features" class="nav-link">Features</a>
+        <a href="#download" class="nav-link">FAQ</a>
+        <a href="privacy" class="nav-link" id="mobilePrivacy">Privacy Policy</a>
+        <a href="terms" class="nav-link" id="mobileTerms">Terms of Service</a>
+        <a href="#" class="nav-link" id="mobileChangelog">Changelog</a>
+        <a href="#" class="nav-link" id="mobileFeedback">Feedback</a>
+        <button class="nav-login-btn nav-mobile-login" id="mobileLogin" type="button">Log in</button>
+        <a href="Raven-Notch.exe" download class="btn-primary nav-mobile-cta" id="downloadBtnMobile">Download Trial</a>
+      </div>
+    </div>
+  </nav>
+  <div class="account-popover" id="accountPopover" aria-hidden="true">
+    <div class="account-card">
+      <button class="account-popover-close" id="accountPopoverClose" type="button" aria-label="Close account menu">×</button>
+      <div class="account-card-inner" id="accountCardInner">
+        <div class="account-card-face account-card-front">
+          <div class="account-avatar-large" id="accountAvatarLarge"></div>
+          <h3 id="accountName">Raven User</h3>
+          <p id="accountUsername">@raven</p>
+          <div class="account-plan-status" id="accountPlanStatus">
+            <span class="account-plan-dot"></span>
+            <span id="accountPlanText">Not purchased</span>
+          </div>
+          <button class="account-action account-edit" id="accountEditBtn" type="button">Edit Profile</button>
+          <button class="account-action account-logout" id="accountLogoutBtn" type="button">Logout</button>
+        </div>
+        <form class="account-card-face account-card-back" id="accountEditForm">
+          <div class="account-edit-title">Edit Profile</div>
+          <button class="account-photo-picker" id="accountPhotoPicker" type="button" aria-label="Choose profile photo">
+            <span class="account-photo-preview" id="accountPhotoPreview"></span>
+            <span class="account-camera-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 8.5A2.5 2.5 0 0 1 6.5 6H8l1.4-1.8A2 2 0 0 1 11 3.5h2a2 2 0 0 1 1.6.8L16 6h1.5A2.5 2.5 0 0 1 20 8.5v8A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5v-8Z"/>
+                <circle cx="12" cy="12.5" r="3.3"/>
+              </svg>
+            </span>
+          </button>
+          <input type="file" id="accountPhotoInput" accept="image/png,image/jpeg,image/webp" hidden />
+          <input type="hidden" name="picture" />
+          <label>
+            <span>Name</span>
+            <input type="text" name="name" placeholder="Your name" required />
+          </label>
+          <label>
+            <span>Username</span>
+            <input type="text" name="username" placeholder="username" autocapitalize="none" spellcheck="false" />
+          </label>
+          <label>
+            <span>New password</span>
+            <input type="password" name="password" placeholder="Leave blank to keep same" autocomplete="new-password" />
+          </label>
+          <p class="account-edit-error" id="accountEditError"></p>
+          <button class="account-action account-update" type="submit">Update</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       HERO SECTION
+  ============================================================ -->
+  <section class="hero" id="hero">
+    <!-- Light rays -->
+    <div class="light-rays" aria-hidden="true">
+      <div class="rays-container"></div>
+    </div>
+
+    <!-- Background glow orbs for glass refraction -->
+    <div class="glow-orb glow-orb-1" aria-hidden="true"></div>
+    <div class="glow-orb glow-orb-mid" aria-hidden="true"></div>
+    <div class="glow-orb glow-orb-2" aria-hidden="true"></div>
+
+    <div class="container">
+      <div class="hero-header reveal">
+        <div class="section-label">
+          <span class="section-label-icon">✦</span>
+          <span>Dynamic Notch for Windows</span>
+        </div>
+        <h1 class="hero-title">
+          <span class="hero-title-line">The Dynamic Notch</span>
+          <span class="hero-title-line accent-line">Windows Deserved.</span>
+        </h1>
+        <p class="hero-body">A native, ultra-lightweight overlay that adds an interactive Dynamic Notch to Windows.</p>
+        <div class="hero-ctas">
+          <a href="Raven-Notch.exe" download class="btn-dl-win" id="downloadBtnHero">
+            <svg class="dl-win-icon" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M0 3.449L9.75 2.1v9.45H0V3.449zM0 12.45h9.75v9.45L0 20.551v-8.101zM11.25 1.899L24 0v11.55H11.25V1.899zM11.25 12.45H24v11.55l-12.75-1.9v-9.65z"/>
+            </svg>
+            <div class="dl-win-text">
+              <span class="dl-win-sub">Download for</span>
+              <span class="dl-win-main">Windows</span>
+            </div>
+          </a>
+          <button class="btn-purchase" id="purchaseBtnHero" type="button">
+            <svg class="purchase-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="5" width="18" height="14" rx="3"></rect>
+              <path d="M3 10h18"></path>
+              <path d="M7 15h4"></path>
+            </svg>
+            <span class="purchase-label">Buy Lifetime</span>
+            <span class="purchase-price">₹99</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- INTERACTIVE APP SIMULATOR -->
+      <div class="simulator-screen reveal" id="appSimulator">
+        <!-- Raven Notch Simulator -->
+        <div class="simulator-notch-container">
+          <!-- Visual Guide Prompt (Pulsating hint to hover) -->
+          <div class="notch-guide-prompt" id="notchGuidePrompt">
+            <div class="notch-guide-ring"></div>
+            <div class="notch-guide-tooltip">
+              <svg viewBox="0 0 24 24" class="notch-guide-cursor" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M15 14l-3-3-3 3"/>
+                <path d="M12 11V3"/>
+              </svg>
+              Hover to expand
+            </div>
+          </div>
+          
+          <div class="raven-notch" id="ravenNotch">
+
+            <!-- Expanded panel (shown on hover) -->
+            <div class="notch-expanded" id="notchExpanded">
+
+              <!-- TOP BAR -->
+              <div class="ne-topbar">
+                <div class="ne-tabs">
+                  <!-- Home -->
+                  <button class="ne-tab active" data-mod="home" title="Home">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                  </button>
+                  <!-- Waveform / Music -->
+                  <button class="ne-tab" data-mod="media" title="Media">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="10" x2="6" y2="14" /><line x1="12" y1="6" x2="12" y2="18" /><line x1="18" y1="10" x2="18" y2="14" /></svg>
+                  </button>
+                  <!-- Timer / Clock -->
+                  <button class="ne-tab" data-mod="clock" title="Timer">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  </button>
+                  <!-- Shelf / Tray -->
+                  <button class="ne-tab" data-mod="shelf" title="Drop Shelf">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
+                  </button>
+                  <!-- Activity / Stats -->
+                  <button class="ne-tab" data-mod="stats" title="Stats">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                  </button>
+                </div>
+                <div class="ne-status">
+                  <!-- Caffeine -->
+                  <button class="ne-status-btn" id="cafBtn" title="Caffeine">
+                    <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M3 5.5h5a1 1 0 0 1 1 1v5a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-5a1 1 0 0 1 1-1Zm6 1h.5a2.5 2.5 0 0 1 0 5H9M4 .5v2m3-2v2"/>
+                    </svg>
+                  </button>
+                  <!-- Settings / Sun gear -->
+                  <button class="ne-status-btn" title="Settings">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                  </button>
+                  <!-- Battery -->
+                  <div class="ne-battery">
+                    <span class="ne-batt-pct" id="battPct">100%</span>
+                    <div class="ne-batt-shell">
+                      <div class="ne-batt-fill" id="battFill" style="width:100%"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- HEADER SPACER -->
+              <div class="ne-header-spacer"></div>
+
+              <!-- BODY -->
+              <div class="ne-body" data-active-mod="home" data-panel-dir="forward">
+
+                <!-- HOME MODULE -->
+                <div class="ne-module-home ne-module-panel active">
+                  <!-- LEFT: Media -->
+                  <div class="ne-left">
+                    <audio id="mediaAudio" src="After-hour.mp3" preload="metadata"></audio>
+                    <div class="ne-art">
+                      <img src="after-hours.jpg" alt="After Hours" />
+                    </div>
+                    <div class="ne-media-info">
+                      <div class="ne-media-text">
+                        <div class="ne-song-title">After Hours</div>
+                        <div class="ne-song-artist">The Weeknd</div>
+                      </div>
+                      <div class="ne-progress-container">
+                        <div class="ne-prog-track">
+                          <div class="ne-prog-fill"></div>
+                          <div class="ne-prog-thumb"></div>
+                        </div>
+                        <div class="ne-ts-row">
+                          <span class="ne-ts">0:00</span>
+                          <span class="ne-ts">6:01</span>
+                        </div>
+                      </div>
+                      <div class="ne-ctrl-row">
+                        <!-- Shuffle -->
+                        <button class="ne-ctrl ne-ctrl-sm" title="Shuffle">
+                          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/></svg>
+                        </button>
+                        <!-- Previous -->
+                        <button class="ne-ctrl" title="Previous">
+                          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+                        </button>
+                        <!-- Play/Pause -->
+                        <button class="ne-ctrl ne-ctrl-play" id="playBtn" title="Play">
+                          <svg class="icon-pause" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                          <svg class="icon-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                        </button>
+                        <!-- Next -->
+                        <button class="ne-ctrl" title="Next">
+                          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+                        </button>
+                        <!-- Repeat -->
+                        <button class="ne-ctrl ne-ctrl-sm" title="Repeat">
+                          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- DIVIDER -->
+                  <div class="ne-divider"></div>
+
+                  <!-- RIGHT: Calendar -->
+                  <div class="ne-right" id="neHomeCalendar">
+                    <!-- Month + Scrubber Strip -->
+                    <div class="ne-cal-header-row">
+                      <div class="ne-cal-month-year" id="neCalMonthYear">
+                        <span class="ne-cal-month" id="calMonth">June</span>
+                        <span class="ne-cal-year" id="calYear">2026</span>
+                      </div>
+                      
+                      <!-- Scrollable horizontal scrubber -->
+                      <div class="ne-cal-scrubber" id="calScrubber">
+                        <!-- Populated dynamically by JS -->
+                      </div>
+                    </div>
+
+                    <!-- Selected Day Row -->
+                    <div class="ne-cal-selected-row">
+                      <span class="ne-cal-selected-dot"></span>
+                      <span id="calSelectedDayLabel">Friday, Jun 5</span>
+                    </div>
+
+                    <!-- Main Dynamic Event / Connection Card -->
+                    <div class="ne-cal-events-card" id="calEventsCard">
+                      <div class="ne-google-connect-card">
+                        <div class="ne-google-logo-row">
+                          <svg class="ne-google-svg" viewBox="0 0 48 48" width="24" height="24">
+                            <path fill="#EA4335" d="M 24 9.5 C 27.5 9.5 30.6 10.7 33.1 13.1 L 39.9 6.3 C 35.8 2.5 30.4 0.2 24 0.2 C 14.7 0.2 6.7 5.5 2.8 13.2 L 10.7 19.3 C 12.6 13.5 17.9 9.5 24 9.5 Z"/>
+                            <path fill="#4285F4" d="M 46.9 24.5 C 46.9 22.9 46.8 21.7 46.5 20.4 L 24 20.4 L 24 28.7 L 37.2 28.7 C 36.9 30.8 35.5 34 32.3 36.2 L 40 42.2 C 44.5 38 46.9 31.9 46.9 24.5 Z"/>
+                            <path fill="#FBBC05" d="M 10.7 28.7 C 10.2 27.2 9.9 25.6 9.9 24 C 9.9 22.4 10.2 20.8 10.7 19.3 L 2.8 13.2 C 1.1 16.5 0.2 20.1 0.2 24 C 0.2 27.9 1.1 31.5 2.8 34.8 L 10.7 28.7 Z"/>
+                            <path fill="#34A853" d="M 24 47.8 C 30.4 47.8 35.8 45.7 39.8 42.1 L 32.1 36.1 C 30 37.5 27.3 38.5 24 38.5 C 17.9 38.5 12.7 34.5 10.8 28.9 L 2.9 35 C 6.7 42.5 14.7 47.8 24 47.8 Z"/>
+                          </svg>
+                          <svg class="ne-cal-icon-deco" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                            <line x1="16" y1="2" x2="16" y2="6"/>
+                            <line x1="8" y1="2" x2="8" y2="6"/>
+                            <line x1="3" y1="10" x2="21" y2="10"/>
+                          </svg>
+                        </div>
+                        <div class="ne-google-title-group">
+                          <div class="ne-google-connect-title">Connect Google Account</div>
+                          <div class="ne-google-connect-desc">Sign in to sync your calendar.</div>
+                        </div>
+                        <button class="ne-google-signin-btn" id="googleSignInBtn">
+                          <span class="ne-signin-btn-text">Sign in</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- MEDIA MODULE (Dedicated Slint-Exact Media Panel) -->
+                <div class="ne-module-media ne-module-panel">
+                  <!-- LEFT: Media Player Panel -->
+                  <div class="ne-media-left">
+                    <div class="ne-media-main-player">
+                      <!-- Left Column: Album Art -->
+                      <div class="ne-media-art-wrap">
+                        <img src="after-hours.jpg" alt="After Hours" class="ne-media-art" />
+                        <div class="ne-media-art-fallback">
+                          <div class="ne-fallback-dot-1"></div>
+                          <div class="ne-fallback-dot-2"></div>
+                          <div class="ne-fallback-star-1"></div>
+                          <div class="ne-fallback-star-2"></div>
+                        </div>
+                      </div>
+                      
+                      <!-- Right Column: Metadata + Progress + Controls -->
+                      <div class="ne-media-player-right">
+                        <!-- Metadata -->
+                        <div class="ne-media-meta">
+                          <div class="ne-media-title">After Hours</div>
+                          <div class="ne-media-artist-source" id="mediaPanelArtist">The Weeknd • Spotify</div>
+                          <div class="ne-media-album-sec">After Hours</div>
+                        </div>
+                        
+                        <!-- Progress Bar & Times -->
+                        <div class="ne-media-prog-container">
+                          <div class="ne-media-prog-track" id="mediaPanelProgTrack">
+                            <div class="ne-media-prog-fill" id="mediaPanelProgFill" style="width:0%"></div>
+                            <div class="ne-media-prog-thumb" id="mediaPanelProgThumb" style="left:0%"></div>
+                          </div>
+                          <div class="ne-media-times">
+                            <span class="ne-media-time-pos" id="mediaPanelTimePos">0:00</span>
+                            <span class="ne-media-time-dur" id="mediaPanelTimeDur">6:01</span>
+                          </div>
+                        </div>
+                        
+                        <!-- Playback Controls -->
+                        <div class="ne-media-ctrls">
+                          <!-- Shuffle -->
+                          <button class="ne-media-ctrl-btn" id="mediaPanelShuffleBtn" title="Shuffle">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M 2 18 L 5 18 C 7 18 8 17 9 15.5 L 15 8.5 C 16 7 17 6 19 6 L 22 6 M 18 2 L 22 6 L 18 10 M 2 6 L 5 6 C 7 6 8 7 9 8.5 L 10 10 M 14 14.5 L 15 15.5 C 16 17 17 18 19 18 L 22 18 M 18 14 L 22 18 L 18 22"/>
+                            </svg>
+                          </button>
+                          <!-- Prev -->
+                          <button class="ne-media-ctrl-btn" id="mediaPanelPrevBtn" title="Previous">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M 18 18 L 9 12 L 18 6 L 18 18 Z M 8 6 L 8 18 L 6 18 L 6 6 Z"/>
+                            </svg>
+                          </button>
+                          <!-- Play/Pause -->
+                          <button class="ne-media-play-btn" id="mediaPanelPlayBtn" title="Play">
+                            <svg class="icon-media-panel-pause" viewBox="0 0 24 24" fill="currentColor" style="display:none">
+                              <path d="M 6.5 5 H 10.7 V 19 H 6.5 V 5 Z M 13.3 5 H 17.5 V 19 H 13.3 V 5 Z"/>
+                            </svg>
+                            <svg class="icon-media-panel-play" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M 8 5.25 L 8 18.75 L 18.7 12 L 8 5.25 Z"/>
+                            </svg>
+                          </button>
+                          <!-- Next -->
+                          <button class="ne-media-ctrl-btn" id="mediaPanelNextBtn" title="Next">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M 6 18 L 15 12 L 6 6 L 6 18 Z M 16 6 L 16 18 L 18 18 L 18 6 Z"/>
+                            </svg>
+                          </button>
+                          <!-- Repeat -->
+                          <button class="ne-media-ctrl-btn" id="mediaPanelRepeatBtn" title="Repeat">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M 17 2 L 21 6 L 17 10 M 3 11 L 3 10 C 3 7.8 4.8 6 7 6 L 21 6 M 7 22 L 3 18 L 7 14 M 21 13 L 21 14 C 21 16.2 19.2 18 17 18 L 3 18"/>
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- Bottom: Waveform Visualizer -->
+                    <div class="ne-media-waveform" id="mediaPanelWaveform">
+                      <svg viewBox="0 0 344 32" id="neWaveformSvg">
+                        <path id="wavePath1" d="M 0 16" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" />
+                        <path id="wavePath2" d="M 0 16" fill="none" stroke="rgba(255,255,255,0.38)" stroke-width="2.0" />
+                        <path id="wavePath3" d="M 0 16" fill="none" stroke="rgba(255,255,255,0.75)" stroke-width="2.5" />
+                      </svg>
+                    </div>
+                  </div>
+
+                  <!-- DIVIDER -->
+                  <div class="ne-divider"></div>
+
+                  <!-- RIGHT: Lyrics Panel -->
+                  <div class="ne-lyrics-right">
+                    <div class="ne-lyrics-head">
+                      <div class="ne-lyrics-title">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M8.35 6.2c-1.87 1.34-2.8 2.88-2.8 4.62.2-.07.46-.1.8-.1.78 0 1.42.25 1.92.76.5.5.75 1.14.75 1.92 0 .84-.27 1.52-.82 2.06-.55.54-1.25.8-2.08.8-1.03 0-1.85-.39-2.46-1.17-.6-.79-.9-1.82-.9-3.1 0-3.07 1.4-5.55 4.2-7.45l1.39 1.66Zm10 0c-1.87 1.34-2.8 2.88-2.8 4.62.2-.07.46-.1.8-.1.78 0 1.42.25 1.92.76.5.5.75 1.14.75 1.92 0 .84-.27 1.52-.82 2.06-.55.54-1.25.8-2.08.8-1.03 0-1.85-.39-2.46-1.17-.6-.79-.9-1.82-.9-3.1 0-3.07 1.4-5.55 4.2-7.45l1.39 1.66Z"/>
+                        </svg>
+                        <span>LYRICS</span>
+                      </div>
+                    </div>
+                    
+                    <div class="ne-lyrics-divider"></div>
+                    
+                    <!-- Scrolling Lyrics Content -->
+                    <div class="ne-lyrics-content">
+                      <div class="ne-lyrics-scroller" id="lyricsScroller">
+                        <!-- Lyrics lines will be loaded dynamically by JS -->
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- DROP SHELF MODULE -->
+                <div class="ne-module-shelf ne-module-panel" id="shelfModule">
+                  <!-- LEFT: Share Target -->
+                  <div class="ne-share-target" id="shelfShareTarget">
+                    <!-- Dashed border backdrop -->
+                    <svg class="ne-dashed-border" viewBox="0 0 160 178" fill="none">
+                      <rect x="0.75" y="0.75" width="158.5" height="176.5" rx="20" stroke="rgba(255,255,255,0.15)" stroke-dasharray="6 4" stroke-width="1.5" id="shelfBorderLeftRect"/>
+                    </svg>
+                    <div class="ne-share-target-content">
+                      <div class="ne-share-badge">
+                        <img src="assets/localsend.png" alt="LocalSend" id="shelfProviderIcon" class="localsend-size" />
+                      </div>
+                      <div class="ne-share-provider-name" id="shelfProviderName">LocalSend</div>
+                      <div class="ne-share-notice" id="shelfShareNotice"></div>
+                    </div>
+                  </div>
+
+                  <!-- RIGHT: Shelf Storage -->
+                  <div class="ne-shelf-storage" id="shelfStorage">
+                    <!-- Dashed border backdrop -->
+                    <svg class="ne-dashed-border" viewBox="0 0 512 178" fill="none">
+                      <rect x="0.75" y="0.75" width="510.5" height="176.5" rx="20" stroke="rgba(255,255,255,0.15)" stroke-dasharray="6 4" stroke-width="1.5" id="shelfBorderRightRect"/>
+                    </svg>
+                    <div class="ne-shelf-storage-content">
+                      <!-- Toolbar (shown when items > 0) -->
+                      <div class="ne-shelf-toolbar" id="shelfToolbar" style="display: none;">
+                        <div class="ne-shelf-toolbar-left">
+                          <img src="assets/inbox-topbar.png" alt="Inbox" class="ne-shelf-toolbar-icon" />
+                          <span id="shelfTitle">Shelf (0)</span>
+                        </div>
+                        <button class="ne-shelf-clear-btn" id="shelfClearBtn">Clear All</button>
+                      </div>
+
+                      <!-- Main Area -->
+                      <div class="ne-shelf-main-area" id="shelfMainArea">
+                        <!-- Empty State -->
+                        <div class="ne-shelf-empty-state" id="shelfEmptyState">
+                          <img src="assets/inbox.svg" alt="Inbox" class="ne-shelf-empty-icon" />
+                          <div class="ne-shelf-empty-title">Drop files here</div>
+                        </div>
+
+                        <!-- Card list (scroll list) -->
+                        <div class="ne-shelf-cards-scroll" id="shelfCardsScroll" style="display: none;">
+                          <div class="ne-shelf-cards-container" id="shelfCardsContainer">
+                            <!-- Cards loaded dynamically -->
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- STATS MODULE -->
+                <div class="ne-module-stats ne-module-panel" id="statsModule">
+                  <!-- CPU Card -->
+                  <div class="ne-stats-card ne-stats-cpu" id="neCpuCard" title="Click to stress test CPU">
+                    <div class="ne-stats-card-header">
+                      <div class="ne-stats-card-label">
+                        <svg viewBox="0 0 24 24" fill="none" class="ne-stats-card-icon" xmlns="http://www.w3.org/2000/svg">
+                          <rect x="5" y="5" width="14" height="14" rx="2" stroke="currentColor" stroke-width="2"/>
+                          <rect x="9" y="9" width="6" height="6" rx="1" fill="currentColor"/>
+                          <path d="M9 1V5M15 1V5M9 19V23M15 19V23M1 9H5M1 15H5M19 9H23M19 15H23" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        <span>CPU</span>
+                      </div>
+                      <div class="ne-stats-card-value" id="neCpuValue">0.0%</div>
+                    </div>
+                    <div class="ne-stats-card-graph">
+                      <svg viewBox="0 0 200 80" preserveAspectRatio="none" class="ne-stats-svg">
+                        <defs>
+                          <linearGradient id="neCpuGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="rgba(48, 176, 255, 0.22)" />
+                            <stop offset="100%" stop-color="rgba(48, 176, 255, 0)" />
+                          </linearGradient>
+                        </defs>
+                        <path d="M 0 80 L 200 80 Z" fill="url(#neCpuGrad)" id="neCpuFillPath" />
+                        <path d="M 0 80" stroke="#30B0FF" stroke-width="2.2" fill="none" id="neCpuStrokePath" stroke-linecap="round" stroke-linejoin="round" />
+                      </svg>
+                    </div>
+                    <div class="ne-stats-stress-badge">STRESS ACTIVE</div>
+                  </div>
+
+                  <!-- Memory/RAM Card -->
+                  <div class="ne-stats-card ne-stats-ram" id="neRamCard" title="Click to stress test Memory">
+                    <div class="ne-stats-card-header">
+                      <div class="ne-stats-card-label">
+                        <svg viewBox="0 0 24 24" fill="none" class="ne-stats-card-icon" xmlns="http://www.w3.org/2000/svg">
+                          <rect x="2" y="6" width="20" height="12" rx="2" stroke="currentColor" stroke-width="2"/>
+                          <path d="M6 6V3M10 6V3M14 6V3M18 6V3M6 18V21M10 18V21M14 18V21M18 18V21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                          <rect x="5" y="9" width="3" height="6" rx="0.5" fill="currentColor"/>
+                          <rect x="10" y="9" width="3" height="6" rx="0.5" fill="currentColor"/>
+                          <rect x="15" y="9" width="3" height="6" rx="0.5" fill="currentColor"/>
+                        </svg>
+                        <span>Memory</span>
+                      </div>
+                      <div class="ne-stats-card-value" id="neRamValue">0.0%</div>
+                    </div>
+                    <div class="ne-stats-card-graph">
+                      <svg viewBox="0 0 200 80" preserveAspectRatio="none" class="ne-stats-svg">
+                        <defs>
+                          <linearGradient id="neRamGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="rgba(48, 209, 88, 0.22)" />
+                            <stop offset="100%" stop-color="rgba(48, 209, 88, 0)" />
+                          </linearGradient>
+                        </defs>
+                        <path d="M 0 80 L 200 80 Z" fill="url(#neRamGrad)" id="neRamFillPath" />
+                        <path d="M 0 80" stroke="#30D158" stroke-width="2.2" fill="none" id="neRamStrokePath" stroke-linecap="round" stroke-linejoin="round" />
+                      </svg>
+                    </div>
+                    <div class="ne-stats-stress-badge">STRESS ACTIVE</div>
+                  </div>
+
+                  <!-- GPU Card -->
+                  <div class="ne-stats-card ne-stats-gpu" id="neGpuCard" title="Click to stress test GPU">
+                    <div class="ne-stats-card-header">
+                      <div class="ne-stats-card-label">
+                        <svg viewBox="0 0 24 24" fill="none" class="ne-stats-card-icon" xmlns="http://www.w3.org/2000/svg">
+                          <rect x="2" y="3" width="20" height="13" rx="2" stroke="currentColor" stroke-width="2"/>
+                          <path d="M9 16L7 21H17L15 16" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                          <path d="M2 12H22" stroke="currentColor" stroke-width="1.5"/>
+                        </svg>
+                        <span>GPU</span>
+                      </div>
+                      <div class="ne-stats-card-value" id="neGpuValue">0.0%</div>
+                    </div>
+                    <div class="ne-stats-card-graph">
+                      <svg viewBox="0 0 200 80" preserveAspectRatio="none" class="ne-stats-svg">
+                        <defs>
+                          <linearGradient id="neGpuGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="rgba(191, 90, 242, 0.22)" />
+                            <stop offset="100%" stop-color="rgba(191, 90, 242, 0)" />
+                          </linearGradient>
+                        </defs>
+                        <path d="M 0 80 L 200 80 Z" fill="url(#neGpuGrad)" id="neGpuFillPath" />
+                        <path d="M 0 80" stroke="#BF5AF2" stroke-width="2.2" fill="none" id="neGpuStrokePath" stroke-linecap="round" stroke-linejoin="round" />
+                      </svg>
+                    </div>
+                    <div class="ne-stats-stress-badge">STRESS ACTIVE</div>
+                  </div>
+                </div>
+
+                <!-- CLOCK MODULE -->
+                <div class="ne-module-clock ne-module-panel">
+                  <!-- LEFT: Analog Clock -->
+                  <div class="ne-clock-left">
+                    <div class="ne-analog-clock">
+                      <svg viewBox="0 0 154 154" id="neAnalogClock">
+                        <defs>
+                          <radialGradient id="analogClockBg" cx="50%" cy="50%" r="50%">
+                            <stop offset="0%" stop-color="rgba(255,255,255,0.03)" />
+                            <stop offset="100%" stop-color="rgba(0,0,0,0.18)" />
+                          </radialGradient>
+                        </defs>
+                        <circle cx="77" cy="77" r="76.5" class="clock-face" fill="url(#analogClockBg)" />
+                        <g id="clockTicks"></g>
+                        <text x="77" y="32" class="clock-num">12</text>
+                        <text x="124" y="77" class="clock-num">3</text>
+                        <text x="77" y="122" class="clock-num">6</text>
+                        <text x="30" y="77" class="clock-num">9</text>
+                        <!-- hands -->
+                        <line id="hourHand" x1="77" y1="77" x2="77" y2="33" class="clock-hand hour-hand" />
+                        <line id="minHand" x1="77" y1="77" x2="77" y2="19" class="clock-hand min-hand" />
+                        <line id="secHand" x1="77" y1="77" x2="77" y2="11" class="clock-hand sec-hand" />
+                        <circle cx="77" cy="77" r="4.5" class="clock-cap" />
+                      </svg>
+                    </div>
+                  </div>
+
+                  <!-- MIDDLE: Digital Clock & Timer/Stopwatch Widget -->
+                  <div class="ne-clock-middle">
+                    <div class="ne-clock-middle-content">
+                      <div class="ne-clock-dig-row">
+                        <span class="ne-clock-dig-time" id="neClockDigTime">12:00</span>
+                        <div class="ne-clock-dig-sec-col">
+                          <span class="ne-clock-dig-ampm" id="neClockDigAmPm">AM</span>
+                          <span class="ne-clock-dig-sec" id="neClockDigSec">00</span>
+                        </div>
+                      </div>
+                      
+                      <div class="ne-clock-modes">
+                        <span class="ne-clock-mode active" data-clock-mode="timer">TIMER</span>
+                        <span class="ne-clock-mode" data-clock-mode="lap">LAP</span>
+                        <span class="ne-clock-mode" data-clock-mode="stopwatch">STOPWATCH</span>
+                      </div>
+
+                      <div class="ne-clock-display-wrap">
+                        <!-- Timer Display -->
+                        <div class="ne-clock-display-view active" id="viewTimer">
+                          <span class="ne-timer-val" id="timerVal">25:30</span>
+                        </div>
+                        
+                        <!-- Lap Display (logs list) -->
+                        <div class="ne-clock-display-view" id="viewLap">
+                          <div class="ne-lap-list-wrap">
+                            <div class="ne-lap-list" id="lapList">
+                              <div class="ne-lap-empty">No laps recorded</div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Stopwatch Display -->
+                        <div class="ne-clock-display-view" id="viewStopwatch">
+                          <span class="ne-stopwatch-val" id="stopwatchVal">00:00.00</span>
+                        </div>
+                      </div>
+
+                      <div class="ne-clock-ctrls">
+                        <!-- Reset -->
+                        <button class="ne-clock-btn" id="clockResetBtn" title="Reset">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                        </button>
+                        <!-- Play/Pause -->
+                        <button class="ne-clock-btn ne-clock-play-btn" id="clockPlayBtn" title="Start">
+                          <svg class="icon-clock-pause" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                          <svg class="icon-clock-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                        </button>
+                        <!-- Lap/Flag -->
+                        <button class="ne-clock-btn" id="clockLapBtn" title="Lap / Flag">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1zM4 22v-7"/></svg>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- TIMER INPUT PANEL (DITTO NATIVE COMPONENT) -->
+                    <div class="ne-timer-input-panel" id="timerInputPanel">
+                      <div class="ne-tip-title">SET TIMER</div>
+                      <div class="ne-tip-inputs">
+                        <div class="ne-tip-input-group">
+                          <span class="ne-tip-input-label">H</span>
+                          <input type="text" class="ne-tip-input-box" id="timerInputH" value="0" maxlength="2" />
+                        </div>
+                        <div class="ne-tip-input-group">
+                          <span class="ne-tip-input-label">M</span>
+                          <input type="text" class="ne-tip-input-box" id="timerInputM" value="25" maxlength="2" />
+                        </div>
+                        <div class="ne-tip-input-group">
+                          <span class="ne-tip-input-label">S</span>
+                          <input type="text" class="ne-tip-input-box" id="timerInputS" value="30" maxlength="2" />
+                        </div>
+                      </div>
+                      <div class="ne-tip-buttons">
+                        <button class="ne-tip-btn ne-tip-btn-cancel" id="timerInputCancel">CANCEL</button>
+                        <button class="ne-tip-btn ne-tip-btn-set" id="timerInputSet">SET</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- DIVIDER -->
+                  <div class="ne-divider"></div>
+
+                  <!-- RIGHT: World Clock -->
+                  <div class="ne-clock-world">
+                    <div class="ne-world-head">
+                      <div class="ne-world-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                        <span>WORLD CLOCK</span>
+                      </div>
+                      <div class="ne-world-add-wrapper">
+                        <button class="ne-world-add-btn" id="worldAddBtn" title="Add Clock">+</button>
+                        <div class="ne-world-add-dropdown" id="worldAddDropdown"></div>
+                      </div>
+                    </div>
+                    <div class="ne-world-list">
+                      <!-- New York -->
+                      <div class="ne-world-item" id="worldRowNY">
+                        <div class="ne-world-left">
+                          <div class="ne-world-clock-face">
+                            <svg viewBox="0 0 28 28" class="mini-clock" id="miniClockNY">
+                              <defs>
+                                <radialGradient id="miniClockBgNY" cx="50%" cy="50%" r="50%">
+                                  <stop offset="0%" stop-color="rgba(255,255,255,0.03)" />
+                                  <stop offset="100%" stop-color="rgba(0,0,0,0.3)" />
+                                </radialGradient>
+                              </defs>
+                              <circle cx="14" cy="14" r="13.5" class="mclock-bg" fill="url(#miniClockBgNY)" />
+                              <path d="M 14 1.5 L 14 4 M 26.5 14 L 24 14 M 14 26.5 L 14 24 M 1.5 14 L 4 14" class="mclock-ticks" />
+                              <line x1="14" y1="14" x2="14" y2="8" class="mclock-hand mclock-hour" />
+                              <line x1="14" y1="14" x2="14" y2="5" class="mclock-hand mclock-min" />
+                              <line x1="14" y1="14" x2="14" y2="3.5" class="mclock-hand mclock-sec" />
+                              <circle cx="14" cy="14" r="1.5" class="mclock-cap" />
+                            </svg>
+                          </div>
+                          <div class="ne-world-city-info">
+                            <div class="ne-world-city">New York</div>
+                            <div class="ne-world-tz">UTC -4</div>
+                          </div>
+                        </div>
+                        <div class="ne-world-right">
+                          <div class="ne-world-time" id="worldTimeNY">05:17 PM</div>
+                          <div class="ne-world-date" id="worldDateNY">Jun 4</div>
+                          <button class="ne-world-delete-btn" data-city="NY">&times;</button>
+                        </div>
+                      </div>
+                      <!-- London -->
+                      <div class="ne-world-item" id="worldRowLondon">
+                        <div class="ne-world-left">
+                          <div class="ne-world-clock-face">
+                            <svg viewBox="0 0 28 28" class="mini-clock" id="miniClockLondon">
+                              <defs>
+                                <radialGradient id="miniClockBgLDN" cx="50%" cy="50%" r="50%">
+                                  <stop offset="0%" stop-color="rgba(255,255,255,0.03)" />
+                                  <stop offset="100%" stop-color="rgba(0,0,0,0.3)" />
+                                </radialGradient>
+                              </defs>
+                              <circle cx="14" cy="14" r="13.5" class="mclock-bg" fill="url(#miniClockBgLDN)" />
+                              <path d="M 14 1.5 L 14 4 M 26.5 14 L 24 14 M 14 26.5 L 14 24 M 1.5 14 L 4 14" class="mclock-ticks" />
+                              <line x1="14" y1="14" x2="14" y2="8" class="mclock-hand mclock-hour" />
+                              <line x1="14" y1="14" x2="14" y2="5" class="mclock-hand mclock-min" />
+                              <line x1="14" y1="14" x2="14" y2="3.5" class="mclock-hand mclock-sec" />
+                              <circle cx="14" cy="14" r="1.5" class="mclock-cap" />
+                            </svg>
+                          </div>
+                          <div class="ne-world-city-info">
+                            <div class="ne-world-city">London</div>
+                            <div class="ne-world-tz">UTC +1</div>
+                          </div>
+                        </div>
+                        <div class="ne-world-right">
+                          <div class="ne-world-time" id="worldTimeLondon">10:17 PM</div>
+                          <div class="ne-world-date" id="worldDateLondon">Jun 4</div>
+                          <button class="ne-world-delete-btn" data-city="London">&times;</button>
+                        </div>
+                      </div>
+                      <!-- Tokyo -->
+                      <div class="ne-world-item" id="worldRowTokyo">
+                        <div class="ne-world-left">
+                          <div class="ne-world-clock-face">
+                            <svg viewBox="0 0 28 28" class="mini-clock" id="miniClockTokyo">
+                              <defs>
+                                <radialGradient id="miniClockBgTKY" cx="50%" cy="50%" r="50%">
+                                  <stop offset="0%" stop-color="rgba(255,255,255,0.03)" />
+                                  <stop offset="100%" stop-color="rgba(0,0,0,0.3)" />
+                                </radialGradient>
+                              </defs>
+                              <circle cx="14" cy="14" r="13.5" class="mclock-bg" fill="url(#miniClockBgTKY)" />
+                              <path d="M 14 1.5 L 14 4 M 26.5 14 L 24 14 M 14 26.5 L 14 24 M 1.5 14 L 4 14" class="mclock-ticks" />
+                              <line x1="14" y1="14" x2="14" y2="8" class="mclock-hand mclock-hour" />
+                              <line x1="14" y1="14" x2="14" y2="5" class="mclock-hand mclock-min" />
+                              <line x1="14" y1="14" x2="14" y2="3.5" class="mclock-hand mclock-sec" />
+                              <circle cx="14" cy="14" r="1.5" class="mclock-cap" />
+                            </svg>
+                          </div>
+                          <div class="ne-world-city-info">
+                            <div class="ne-world-city">Tokyo</div>
+                            <div class="ne-world-tz">UTC +9</div>
+                          </div>
+                        </div>
+                        <div class="ne-world-right">
+                          <div class="ne-world-time" id="worldTimeTokyo">06:17 AM</div>
+                          <div class="ne-world-date" id="worldDateTokyo">Jun 5</div>
+                          <button class="ne-world-delete-btn" data-city="Tokyo">&times;</button>
+                        </div>
+                      </div>
+                      <!-- New Delhi -->
+                      <div class="ne-world-item" id="worldRowDelhi" style="display: none;">
+                        <div class="ne-world-left">
+                          <div class="ne-world-clock-face">
+                            <svg viewBox="0 0 28 28" class="mini-clock" id="miniClockDelhi">
+                              <defs>
+                                <radialGradient id="miniClockBgDEL" cx="50%" cy="50%" r="50%">
+                                  <stop offset="0%" stop-color="rgba(255,255,255,0.03)" />
+                                  <stop offset="100%" stop-color="rgba(0,0,0,0.3)" />
+                                </radialGradient>
+                              </defs>
+                              <circle cx="14" cy="14" r="13.5" class="mclock-bg" fill="url(#miniClockBgDEL)" />
+                              <path d="M 14 1.5 L 14 4 M 26.5 14 L 24 14 M 14 26.5 L 14 24 M 1.5 14 L 4 14" class="mclock-ticks" />
+                              <line x1="14" y1="14" x2="14" y2="8" class="mclock-hand mclock-hour" />
+                              <line x1="14" y1="14" x2="14" y2="5" class="mclock-hand mclock-min" />
+                              <line x1="14" y1="14" x2="14" y2="3.5" class="mclock-hand mclock-sec" />
+                              <circle cx="14" cy="14" r="1.5" class="mclock-cap" />
+                            </svg>
+                          </div>
+                          <div class="ne-world-city-info">
+                            <div class="ne-world-city">New Delhi</div>
+                            <div class="ne-world-tz">UTC +5:30</div>
+                          </div>
+                        </div>
+                        <div class="ne-world-right">
+                          <div class="ne-world-time" id="worldTimeDelhi">--:-- --</div>
+                          <div class="ne-world-date" id="worldDateDelhi">--- --</div>
+                          <button class="ne-world-delete-btn" data-city="Delhi">&times;</button>
+                        </div>
+                      </div>
+                      <!-- Sydney -->
+                      <div class="ne-world-item" id="worldRowSydney" style="display: none;">
+                        <div class="ne-world-left">
+                          <div class="ne-world-clock-face">
+                            <svg viewBox="0 0 28 28" class="mini-clock" id="miniClockSydney">
+                              <defs>
+                                <radialGradient id="miniClockBgSYD" cx="50%" cy="50%" r="50%">
+                                  <stop offset="0%" stop-color="rgba(255,255,255,0.03)" />
+                                  <stop offset="100%" stop-color="rgba(0,0,0,0.3)" />
+                                </radialGradient>
+                              </defs>
+                              <circle cx="14" cy="14" r="13.5" class="mclock-bg" fill="url(#miniClockBgSYD)" />
+                              <path d="M 14 1.5 L 14 4 M 26.5 14 L 24 14 M 14 26.5 L 14 24 M 1.5 14 L 4 14" class="mclock-ticks" />
+                              <line x1="14" y1="14" x2="14" y2="8" class="mclock-hand mclock-hour" />
+                              <line x1="14" y1="14" x2="14" y2="5" class="mclock-hand mclock-min" />
+                              <line x1="14" y1="14" x2="14" y2="3.5" class="mclock-hand mclock-sec" />
+                              <circle cx="14" cy="14" r="1.5" class="mclock-cap" />
+                            </svg>
+                          </div>
+                          <div class="ne-world-city-info">
+                            <div class="ne-world-city">Sydney</div>
+                            <div class="ne-world-tz">UTC +10</div>
+                          </div>
+                        </div>
+                        <div class="ne-world-right">
+                          <div class="ne-world-time" id="worldTimeSydney">--:-- --</div>
+                          <div class="ne-world-date" id="worldDateSydney">--- --</div>
+                          <button class="ne-world-delete-btn" data-city="Sydney">&times;</button>
+                        </div>
+                      </div>
+                      <!-- Paris -->
+                      <div class="ne-world-item" id="worldRowParis" style="display: none;">
+                        <div class="ne-world-left">
+                          <div class="ne-world-clock-face">
+                            <svg viewBox="0 0 28 28" class="mini-clock" id="miniClockParis">
+                              <defs>
+                                <radialGradient id="miniClockBgPAR" cx="50%" cy="50%" r="50%">
+                                  <stop offset="0%" stop-color="rgba(255,255,255,0.03)" />
+                                  <stop offset="100%" stop-color="rgba(0,0,0,0.3)" />
+                                </radialGradient>
+                              </defs>
+                              <circle cx="14" cy="14" r="13.5" class="mclock-bg" fill="url(#miniClockBgPAR)" />
+                              <path d="M 14 1.5 L 14 4 M 26.5 14 L 24 14 M 14 26.5 L 14 24 M 1.5 14 L 4 14" class="mclock-ticks" />
+                              <line x1="14" y1="14" x2="14" y2="8" class="mclock-hand mclock-hour" />
+                              <line x1="14" y1="14" x2="14" y2="5" class="mclock-hand mclock-min" />
+                              <line x1="14" y1="14" x2="14" y2="3.5" class="mclock-hand mclock-sec" />
+                              <circle cx="14" cy="14" r="1.5" class="mclock-cap" />
+                            </svg>
+                          </div>
+                          <div class="ne-world-city-info">
+                            <div class="ne-world-city">Paris</div>
+                            <div class="ne-world-tz">UTC +1</div>
+                          </div>
+                        </div>
+                        <div class="ne-world-right">
+                          <div class="ne-world-time" id="worldTimeParis">--:-- --</div>
+                          <div class="ne-world-date" id="worldDateParis">--- --</div>
+                          <button class="ne-world-delete-btn" data-city="Paris">&times;</button>
+                        </div>
+                      </div>
+                      <!-- Dubai -->
+                      <div class="ne-world-item" id="worldRowDubai" style="display: none;">
+                        <div class="ne-world-left">
+                          <div class="ne-world-clock-face">
+                            <svg viewBox="0 0 28 28" class="mini-clock" id="miniClockDubai">
+                              <defs>
+                                <radialGradient id="miniClockBgDXB" cx="50%" cy="50%" r="50%">
+                                  <stop offset="0%" stop-color="rgba(255,255,255,0.03)" />
+                                  <stop offset="100%" stop-color="rgba(0,0,0,0.3)" />
+                                </radialGradient>
+                              </defs>
+                              <circle cx="14" cy="14" r="13.5" class="mclock-bg" fill="url(#miniClockBgDXB)" />
+                              <path d="M 14 1.5 L 14 4 M 26.5 14 L 24 14 M 14 26.5 L 14 24 M 1.5 14 L 4 14" class="mclock-ticks" />
+                              <line x1="14" y1="14" x2="14" y2="8" class="mclock-hand mclock-hour" />
+                              <line x1="14" y1="14" x2="14" y2="5" class="mclock-hand mclock-min" />
+                              <line x1="14" y1="14" x2="14" y2="3.5" class="mclock-hand mclock-sec" />
+                              <circle cx="14" cy="14" r="1.5" class="mclock-cap" />
+                            </svg>
+                          </div>
+                          <div class="ne-world-city-info">
+                            <div class="ne-world-city">Dubai</div>
+                            <div class="ne-world-tz">UTC +4</div>
+                          </div>
+                        </div>
+                        <div class="ne-world-right">
+                          <div class="ne-world-time" id="worldTimeDubai">--:-- --</div>
+                          <div class="ne-world-date" id="worldDateDubai">--- --</div>
+                          <button class="ne-world-delete-btn" data-city="Dubai">&times;</button>
+                        </div>
+                      </div>
+                      <!-- Singapore -->
+                      <div class="ne-world-item" id="worldRowSingapore" style="display: none;">
+                        <div class="ne-world-left">
+                          <div class="ne-world-clock-face">
+                            <svg viewBox="0 0 28 28" class="mini-clock" id="miniClockSingapore">
+                              <defs>
+                                <radialGradient id="miniClockBgSIN" cx="50%" cy="50%" r="50%">
+                                  <stop offset="0%" stop-color="rgba(255,255,255,0.03)" />
+                                  <stop offset="100%" stop-color="rgba(0,0,0,0.3)" />
+                                </radialGradient>
+                              </defs>
+                              <circle cx="14" cy="14" r="13.5" class="mclock-bg" fill="url(#miniClockBgSIN)" />
+                              <path d="M 14 1.5 L 14 4 M 26.5 14 L 24 14 M 14 26.5 L 14 24 M 1.5 14 L 4 14" class="mclock-ticks" />
+                              <line x1="14" y1="14" x2="14" y2="8" class="mclock-hand mclock-hour" />
+                              <line x1="14" y1="14" x2="14" y2="5" class="mclock-hand mclock-min" />
+                              <line x1="14" y1="14" x2="14" y2="3.5" class="mclock-hand mclock-sec" />
+                              <circle cx="14" cy="14" r="1.5" class="mclock-cap" />
+                            </svg>
+                          </div>
+                          <div class="ne-world-city-info">
+                            <div class="ne-world-city">Singapore</div>
+                            <div class="ne-world-tz">UTC +8</div>
+                          </div>
+                        </div>
+                        <div class="ne-world-right">
+                          <div class="ne-world-time" id="worldTimeSingapore">--:-- --</div>
+                          <div class="ne-world-date" id="worldDateSingapore">--- --</div>
+                          <button class="ne-world-delete-btn" data-city="Singapore">&times;</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div><!-- /ne-body -->
+            </div><!-- /notch-expanded -->
+          </div><!-- /raven-notch -->
+        </div><!-- /simulator-notch-container -->
+      </div><!-- /simulator-screen -->
+    </div><!-- /container -->
+  </section>
+
+  <!-- ============================================================
+       FEATURES SECTION
+  ============================================================ -->
+  <section class="features" id="features">
+    <div class="container">
+      <div class="features-header reveal">
+        <div class="section-label">
+          <span class="section-label-icon">⚡</span>
+          <span>What's Inside</span>
+        </div>
+        <h2 class="section-heading titlebox-gradient">
+          Your Desktop,<br/>Powered Up.
+        </h2>
+        <p class="section-body">9 native modules, zero bloat. Everything you need, exactly when you need it.</p>
+      </div>
+
+      <div class="hub-wrapper">
+        <div class="hub-main-layout">
+          <!-- Background Concentric Rings (Desktop only) -->
+          <div class="hub-orbital-bg" aria-hidden="true">
+            <div class="orbital-ring ring-1"></div>
+            <div class="orbital-ring ring-2"></div>
+            <div class="orbital-ring ring-3"></div>
+            <div class="orbital-ring ring-4"></div>
+          </div>
+          
+          <!-- SVG Connector Lines (Desktop only) -->
+          <svg class="hub-connectors-svg" viewBox="0 0 1200 344" fill="none">
+            <!-- Left side paths to center -->
+            <path d="M 384 48 L 516 48 L 549 98" stroke="rgba(255,255,255,0.08)" stroke-width="1.5" stroke-dasharray="4 4" />
+            <path d="M 384 172 L 510 172" stroke="rgba(255,255,255,0.08)" stroke-width="1.5" stroke-dasharray="4 4" />
+            <path d="M 384 296 L 516 296 L 549 246" stroke="rgba(255,255,255,0.08)" stroke-width="1.5" stroke-dasharray="4 4" />
+            
+            <!-- Right side paths to center -->
+            <path d="M 816 48 L 684 48 L 651 98" stroke="rgba(255,255,255,0.08)" stroke-width="1.5" stroke-dasharray="4 4" />
+            <path d="M 816 172 L 690 172" stroke="rgba(255,255,255,0.08)" stroke-width="1.5" stroke-dasharray="4 4" />
+            <path d="M 816 296 L 684 296 L 651 246" stroke="rgba(255,255,255,0.08)" stroke-width="1.5" stroke-dasharray="4 4" />
+            
+            <!-- Connecting points with purple glow (lying on the ring-1 orbit of radius 150px) -->
+            <circle cx="516" cy="48" r="3.5" fill="#a000ff" class="glow-dot" />
+            <circle cx="450" cy="172" r="3.5" fill="#a000ff" class="glow-dot" />
+            <circle cx="516" cy="296" r="3.5" fill="#a000ff" class="glow-dot" />
+            
+            <circle cx="684" cy="48" r="3.5" fill="#a000ff" class="glow-dot" />
+            <circle cx="750" cy="172" r="3.5" fill="#a000ff" class="glow-dot" />
+            <circle cx="684" cy="296" r="3.5" fill="#a000ff" class="glow-dot" />
+          </svg>
+
+          <!-- LEFT COLUMN (3 cards) -->
+          <div class="hub-column hub-left-column">
+            <!-- Fluid Transitions -->
+            <div class="hub-card feature-grid-card reveal" data-delay="0">
+              <div class="card-dot-grid" aria-hidden="true"></div>
+              <div class="hub-card-icon-wrap">
+                <svg viewBox="0 0 48 48" class="feature-grid-svg">
+                  <circle cx="18" cy="24" r="9" fill="currentColor"/>
+                  <circle cx="34" cy="24" r="5.5" fill="currentColor"/>
+                </svg>
+              </div>
+              <div class="hub-card-content">
+                <h3 class="hub-card-title">Fluid transitions</h3>
+                <p class="hub-card-desc">Smooth animations and seamless experiences.</p>
+              </div>
+            </div>
+
+            <!-- Caffeine Mode -->
+            <div class="hub-card feature-grid-card reveal" data-delay="50">
+              <div class="card-dot-grid" aria-hidden="true"></div>
+              <div class="hub-card-icon-wrap">
+                <svg viewBox="0 0 48 48" class="feature-grid-svg" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 14h20v14a10 10 0 0 1-10 10h0a10 10 0 0 1-10-10z" fill="currentColor" fill-opacity="0.1"/>
+                  <path d="M32 18h4a4 4 0 0 1 4 4v2a4 4 0 0 1-4 4h-4"/>
+                  <path d="M8 40h28"/>
+                  <path d="M16 6v4M22 6v4M28 6v4" opacity="0.7"/>
+                </svg>
+              </div>
+              <div class="hub-card-content">
+                <h3 class="hub-card-title">Caffeine Mode</h3>
+                <p class="hub-card-desc">Keep your screen awake with a single click.</p>
+              </div>
+            </div>
+
+            <!-- Drop Shelf -->
+            <div class="hub-card feature-grid-card reveal" data-delay="100">
+              <div class="card-dot-grid" aria-hidden="true"></div>
+              <div class="hub-card-icon-wrap">
+                <svg viewBox="0 0 48 48" class="feature-grid-svg" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M6 34h36v6H6z" fill="currentColor" fill-opacity="0.1"/>
+                  <path d="M12 24v-10a4 4 0 0 1 4-4h16a4 4 0 0 1 4 4v10"/>
+                  <path d="M24 10v14M18 20l6 6 6-6"/>
+                </svg>
+              </div>
+              <div class="hub-card-content">
+                <h3 class="hub-card-title">Drop Shelf</h3>
+                <p class="hub-card-desc">Drag files in and open them directly from the notch.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- CENTER HUB (Lightning logo container) -->
+          <div class="hub-center-container reveal" data-delay="150">
+            <div class="hub-center-circle-outer">
+              <div class="hub-center-circle-inner">
+                <svg viewBox="0 0 48 48" class="hub-lightning-svg" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="28,4 12,24 24,24 20,44 36,20 24,20" fill="currentColor"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT COLUMN (3 cards) -->
+          <div class="hub-column hub-right-column">
+            <!-- Swipe Gestures -->
+            <div class="hub-card feature-grid-card reveal" data-delay="200">
+              <div class="card-dot-grid" aria-hidden="true"></div>
+              <div class="hub-card-icon-wrap">
+                <svg viewBox="0 0 48 48" class="feature-grid-svg" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M24 12v14M24 26c-1.5 0-3-1.5-3-3V18M24 26c1.5 0 3-1.5 3-3V20M27 20c1.5 0 3 1.5 3 3v3c0 4.5-3.5 8-8 8s-8-3.5-8-8v-3"/>
+                  <path d="M12 18a8 8 0 0 1 6-6M9 22a12 12 0 0 1 10-10" stroke-width="2" opacity="0.6"/>
+                </svg>
+              </div>
+              <div class="hub-card-content">
+                <h3 class="hub-card-title">Swipe gestures</h3>
+                <p class="hub-card-desc">Intuitive gestures for faster navigation.</p>
+              </div>
+            </div>
+
+            <!-- File Sharing -->
+            <div class="hub-card feature-grid-card reveal" data-delay="250">
+              <div class="card-dot-grid" aria-hidden="true"></div>
+              <div class="hub-card-icon-wrap">
+                <svg viewBox="0 0 48 48" class="feature-grid-svg" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="14" cy="24" r="5" fill="currentColor" fill-opacity="0.1"/>
+                  <circle cx="34" cy="14" r="5" fill="currentColor" fill-opacity="0.1"/>
+                  <circle cx="34" cy="34" r="5" fill="currentColor" fill-opacity="0.1"/>
+                  <line x1="18.5" y1="21.5" x2="29.5" y2="16.5"/>
+                  <line x1="18.5" y1="26.5" x2="29.5" y2="31.5"/>
+                </svg>
+              </div>
+              <div class="hub-card-content">
+                <h3 class="hub-card-title">Easy File Sharing</h3>
+                <p class="hub-card-desc">Drop files to share them directly from the notch.</p>
+              </div>
+            </div>
+
+            <!-- Customizable HUDs -->
+            <div class="hub-card feature-grid-card reveal" data-delay="300">
+              <div class="card-dot-grid" aria-hidden="true"></div>
+              <div class="hub-card-icon-wrap">
+                <svg viewBox="0 0 48 48" class="feature-grid-svg" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="8" y="10" width="24" height="24" rx="4" fill="currentColor" fill-opacity="0.1"/>
+                  <rect x="18" y="18" width="22" height="20" rx="4" fill="#111111"/>
+                  <rect x="18" y="18" width="22" height="20" rx="4"/>
+                  <line x1="22" y1="24" x2="36" y2="24" stroke-width="2"/>
+                  <circle cx="26" cy="24" r="2" fill="currentColor" stroke="none"/>
+                  <line x1="22" y1="32" x2="36" y2="32" stroke-width="2"/>
+                  <circle cx="32" cy="32" r="2" fill="currentColor" stroke="none"/>
+                </svg>
+              </div>
+              <div class="hub-card-content">
+                <h3 class="hub-card-title">Customizable HUDs</h3>
+                <p class="hub-card-desc">Tailor your interface your way.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BOTTOM ROW (2 cards) -->
+        <div class="hub-bottom-row">
+          <!-- Home Screen Widgets -->
+          <div class="hub-card feature-grid-card reveal" data-delay="350">
+            <div class="card-dot-grid" aria-hidden="true"></div>
+            <div class="hub-card-icon-wrap">
+              <svg viewBox="0 0 48 48" class="feature-grid-svg" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M24 8 L10 20 V38 H18 V28 H30 V38 H38 V20 Z" fill="currentColor" fill-opacity="0.1"/>
+              </svg>
+            </div>
+            <div class="hub-card-content">
+              <h3 class="hub-card-title">Home Screen Widgets</h3>
+              <p class="hub-card-desc">Useful info, right on your home screen.</p>
+            </div>
+          </div>
+
+          <!-- Blazing Fast Native App -->
+          <div class="hub-card feature-grid-card reveal" data-delay="400">
+            <div class="card-dot-grid" aria-hidden="true"></div>
+            <div class="hub-card-icon-wrap">
+              <svg viewBox="0 0 48 48" class="feature-grid-svg" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="28,4 12,24 24,24 20,44 36,20 24,20" fill="currentColor"/>
+              </svg>
+            </div>
+            <div class="hub-card-content">
+              <h3 class="hub-card-title">Blazing fast native app</h3>
+              <p class="hub-card-desc">Native performance that just feels right.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       KPI SECTION
+  ============================================================ -->
+  <section class="kpi-section" id="kpi">
+    <div class="container">
+      <div class="kpi-grid">
+        <div class="kpi-card reveal" data-delay="0">
+          <div class="kpi-card-inner">
+            <div class="kpi-card-dot" aria-hidden="true"></div>
+            <div class="kpi-card-ray" aria-hidden="true"></div>
+            <div class="kpi-num"><span data-animate="100">0</span>%</div>
+            <div class="kpi-label">Customizable Layout</div>
+            <div class="kpi-desc">Tailor the notch scale, opacity, border-radius, and positioning to fit your desktop layout.</div>
+            <div class="kpi-card-line topl" aria-hidden="true"></div>
+            <div class="kpi-card-line leftl" aria-hidden="true"></div>
+            <div class="kpi-card-line bottoml" aria-hidden="true"></div>
+            <div class="kpi-card-line rightl" aria-hidden="true"></div>
+          </div>
+        </div>
+        <div class="kpi-card reveal" data-delay="100">
+          <div class="kpi-card-inner">
+            <div class="kpi-card-dot" aria-hidden="true"></div>
+            <div class="kpi-card-ray" aria-hidden="true"></div>
+            <div class="kpi-num"><span data-animate="100">0</span>%</div>
+            <div class="kpi-label">Privacy Focused</div>
+            <div class="kpi-desc">Zero telemetry, zero tracking, and fully offline operation. Your data never leaves your system.</div>
+            <div class="kpi-card-line topl" aria-hidden="true"></div>
+            <div class="kpi-card-line leftl" aria-hidden="true"></div>
+            <div class="kpi-card-line bottoml" aria-hidden="true"></div>
+            <div class="kpi-card-line rightl" aria-hidden="true"></div>
+          </div>
+        </div>
+        <div class="kpi-card reveal" data-delay="200" id="downloadsKpiCard">
+          <div class="kpi-card-inner">
+            <div class="kpi-card-dot" aria-hidden="true"></div>
+            <div class="kpi-card-ray" aria-hidden="true"></div>
+            <div class="kpi-num"><span id="kpiDownloadsCount" data-animate="15482">0</span></div>
+            <div class="kpi-label">Active Downloads</div>
+            <div class="kpi-desc">Join thousands of users already transforming their Windows desktop experience.</div>
+            <div class="kpi-card-line topl" aria-hidden="true"></div>
+            <div class="kpi-card-line leftl" aria-hidden="true"></div>
+            <div class="kpi-card-line bottoml" aria-hidden="true"></div>
+            <div class="kpi-card-line rightl" aria-hidden="true"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       TESTIMONIALS SECTION
+  ============================================================ -->
+  <section class="testimonials" id="testimonials">
+    <div class="container">
+      <div class="testimonials-header reveal">
+        <div class="section-label">
+          <span class="section-label-icon">💬</span>
+          <span>Feedback</span>
+        </div>
+        <h2 class="section-heading titlebox-gradient">
+          Loved by Power Users.
+        </h2>
+        <p class="section-body">Early feedback from developer and designer workflows running Raven Notch.</p>
+      </div>
+
+      <div class="testimonials-container reveal">
+        <div class="testimonials-carousel" id="testimonialsCarousel">
+
+          <div class="testimonial-card">
+            <div class="card-dot-grid" aria-hidden="true"></div>
+            <p class="testimonial-quote">"An absolute game-changer for Windows. The music widget and dynamic notch look incredibly premium, and it runs with practically zero impact on system resources. Love the minimal desktop aesthetic!"</p>
+            <div class="testimonial-author">
+              <div class="testimonial-avatar">TK</div>
+              <div class="testimonial-meta">
+                <h4 class="testimonial-name">Tyler K.</h4>
+                <p class="testimonial-handle">@tyler_design</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="testimonial-card">
+            <div class="card-dot-grid" aria-hidden="true"></div>
+            <p class="testimonial-quote">"As a developer who spends hours at the terminal, having system stats and caffeine mode directly in a sleek, non-intrusive notch is fantastic. Fits into my workflow like a native Windows feature."</p>
+            <div class="testimonial-author">
+              <div class="testimonial-avatar">AR</div>
+              <div class="testimonial-meta">
+                <h4 class="testimonial-name">Alex Rivera</h4>
+                <p class="testimonial-handle">@rivera_codes</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="testimonial-card">
+            <div class="card-dot-grid" aria-hidden="true"></div>
+            <p class="testimonial-quote">"Incredibly smooth! The drop shelf widget makes transferring files between my IDE and browser so easy. Plus, at ₹99 lifetime, it's an absolute steal. Excellent work!"</p>
+            <div class="testimonial-author">
+              <div class="testimonial-avatar">AS</div>
+              <div class="testimonial-meta">
+                <h4 class="testimonial-name">Aarav Sharma</h4>
+                <p class="testimonial-handle">@aarav_tech</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="testimonial-card">
+            <div class="card-dot-grid" aria-hidden="true"></div>
+            <p class="testimonial-quote">"Setup was a breeze, and the offline privacy focus is a huge plus. The drop shelf widget alone has saved me so much time drag-and-dropping files between projects. Brilliant utility!"</p>
+            <div class="testimonial-author">
+              <div class="testimonial-avatar">SJ</div>
+              <div class="testimonial-meta">
+                <h4 class="testimonial-name">Sarah Jenkins</h4>
+                <p class="testimonial-handle">@sarah_j</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="testimonial-card">
+            <div class="card-dot-grid" aria-hidden="true"></div>
+            <p class="testimonial-quote">"I was skeptical at first, but the interactive widgets (especially the battery and calendar) are incredibly handy. It makes my dual-monitor setup feel so much more modern and alive."</p>
+            <div class="testimonial-author">
+              <div class="testimonial-avatar">MC</div>
+              <div class="testimonial-meta">
+                <h4 class="testimonial-name">Marcus Chen</h4>
+                <p class="testimonial-handle">@marcus_setup</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="testimonial-card">
+            <div class="card-dot-grid" aria-hidden="true"></div>
+            <p class="testimonial-quote">"Absolutely loving the design aesthetics. The smooth hover micro-animations are top-notch (no pun intended!). It matches my clean setup perfectly. Highly recommended!"</p>
+            <div class="testimonial-author">
+              <div class="testimonial-avatar">PP</div>
+              <div class="testimonial-meta">
+                <h4 class="testimonial-name">Priya Patel</h4>
+                <p class="testimonial-handle">@priya_codes</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="testimonial-card">
+            <div class="card-dot-grid" aria-hidden="true"></div>
+            <p class="testimonial-quote">"The Spotify integration is flawless. I can control my music, check CPU temps, and keep my laptop awake with caffeine mode all from one gorgeous screen-notch."</p>
+            <div class="testimonial-author">
+              <div class="testimonial-avatar">DM</div>
+              <div class="testimonial-meta">
+                <h4 class="testimonial-name">David Miller</h4>
+                <p class="testimonial-handle">@david_m</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="testimonial-card">
+            <div class="card-dot-grid" aria-hidden="true"></div>
+            <p class="testimonial-quote">"Great tool for productivity! As a designer, I love that it doesn't clutter my desktop. The quick calendar peek widget is super useful during daily standups."</p>
+            <div class="testimonial-author">
+              <div class="testimonial-avatar">RD</div>
+              <div class="testimonial-meta">
+                <h4 class="testimonial-name">Rohan Deshmukh</h4>
+                <p class="testimonial-handle">@rohan_d</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="testimonial-card">
+            <div class="card-dot-grid" aria-hidden="true"></div>
+            <p class="testimonial-quote">"Very lightweight and fast. It takes less than 20MB of RAM. The UI design is incredibly sleek and fits Windows 11 design guidelines perfectly. A must-have utility!"</p>
+            <div class="testimonial-author">
+              <div class="testimonial-avatar">ER</div>
+              <div class="testimonial-meta">
+                <h4 class="testimonial-name">Elena Rostova</h4>
+                <p class="testimonial-handle">@elena_r</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="testimonial-card">
+            <div class="card-dot-grid" aria-hidden="true"></div>
+            <p class="testimonial-quote">"Offline operation with zero telemetry is what sold me. In today's age, it's rare to find software that respects privacy so much while looking this modern."</p>
+            <div class="testimonial-author">
+              <div class="testimonial-avatar">KV</div>
+              <div class="testimonial-meta">
+                <h4 class="testimonial-name">Kunal Verma</h4>
+                <p class="testimonial-handle">@kunal_v</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="testimonial-card">
+            <div class="card-dot-grid" aria-hidden="true"></div>
+            <p class="testimonial-quote">"Simplifies my desktop workspace. The clock and stopwatch widgets inside the notch help me track my pomodoro sessions seamlessly. Very clean design!"</p>
+            <div class="testimonial-author">
+              <div class="testimonial-avatar">YT</div>
+              <div class="testimonial-meta">
+                <h4 class="testimonial-name">Yuki Tanaka</h4>
+                <p class="testimonial-handle">@yuki_t</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="testimonial-card">
+            <div class="card-dot-grid" aria-hidden="true"></div>
+            <p class="testimonial-quote">"The lifetime license for ₹99 is incredibly pocket-friendly. The developer is very active and pushes updates quickly. Can't wait to see more widgets in the future!"</p>
+            <div class="testimonial-author">
+              <div class="testimonial-avatar">DN</div>
+              <div class="testimonial-meta">
+                <h4 class="testimonial-name">Divya Naidu</h4>
+                <p class="testimonial-handle">@divya_n</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="testimonial-card">
+            <div class="card-dot-grid" aria-hidden="true"></div>
+            <p class="testimonial-quote">"Just wow! The drop shelf is a game changer for content creators. Dragging raw footage into the notch and keeping it ready for editing is incredibly smooth."</p>
+            <div class="testimonial-author">
+              <div class="testimonial-avatar">LO</div>
+              <div class="testimonial-meta">
+                <h4 class="testimonial-name">Liam O'Connor</h4>
+                <p class="testimonial-handle">@liam_codes</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="testimonial-card">
+            <div class="card-dot-grid" aria-hidden="true"></div>
+            <p class="testimonial-quote">"It gives my standard Windows laptop a premium, futuristic look. The dynamic music waves when playing songs are beautiful. Love showing it off to friends!"</p>
+            <div class="testimonial-author">
+              <div class="testimonial-avatar">NS</div>
+              <div class="testimonial-meta">
+                <h4 class="testimonial-name">Neha Sen</h4>
+                <p class="testimonial-handle">@neha_s</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="testimonial-card">
+            <div class="card-dot-grid" aria-hidden="true"></div>
+            <p class="testimonial-quote">"Caffeine mode is a lifesaver when compiling long builds. Simple, fast, and does exactly what it promises without any annoying ads or popups."</p>
+            <div class="testimonial-author">
+              <div class="testimonial-avatar">LB</div>
+              <div class="testimonial-meta">
+                <h4 class="testimonial-name">Lucas Bianchi</h4>
+                <p class="testimonial-handle">@lucas_b</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="testimonial-card">
+            <div class="card-dot-grid" aria-hidden="true"></div>
+            <p class="testimonial-quote">"Fantastic product. Minimal CPU usage, easy keyboard shortcuts, and a highly responsive developer. Easily worth more than what it costs!"</p>
+            <div class="testimonial-author">
+              <div class="testimonial-avatar">VM</div>
+              <div class="testimonial-meta">
+                <h4 class="testimonial-name">Vikram Malhotra</h4>
+                <p class="testimonial-handle">@vikram_m</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="testimonial-card">
+            <div class="card-dot-grid" aria-hidden="true"></div>
+            <p class="testimonial-quote">"Elegant, responsive, and extremely useful. The border-radius customization makes it blend perfectly with my thin-bezel laptop monitor. 10/10."</p>
+            <div class="testimonial-author">
+              <div class="testimonial-avatar">CD</div>
+              <div class="testimonial-meta">
+                <h4 class="testimonial-name">Chloe Dubois</h4>
+                <p class="testimonial-handle">@chloe_d</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="carousel-controls">
+          <button class="carousel-btn" id="carouselPrev" aria-label="Previous testimonial">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </button>
+          <div class="carousel-dots" id="carouselDots"></div>
+          <button class="carousel-btn" id="carouselNext" aria-label="Next testimonial">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       MARQUEE SECTION
+  ============================================================ -->
+  <section class="marquee-section">
+    <div class="marquee-container">
+      <div class="marquee-track">
+        <div class="marquee-item">DYNAMIC NOTCH</div>
+        <div class="marquee-item">·</div>
+        <div class="marquee-item">LIVE MUSIC</div>
+        <div class="marquee-item">·</div>
+        <div class="marquee-item">SYSTEM STATS</div>
+        <div class="marquee-item">·</div>
+        <div class="marquee-item">DROP SHELF</div>
+        <div class="marquee-item">·</div>
+        <div class="marquee-item">CAFFEINE MODE</div>
+        <div class="marquee-item">·</div>
+        <div class="marquee-item">CALENDAR</div>
+        <div class="marquee-item">·</div>
+        <div class="marquee-item">BATTERY</div>
+        <div class="marquee-item">·</div>
+        <div class="marquee-item">CLOCK &amp; TIMER</div>
+        <div class="marquee-item">·</div>
+        <!-- Duplicated for loop -->
+        <div class="marquee-item">DYNAMIC NOTCH</div>
+        <div class="marquee-item">·</div>
+        <div class="marquee-item">LIVE MUSIC</div>
+        <div class="marquee-item">·</div>
+        <div class="marquee-item">SYSTEM STATS</div>
+        <div class="marquee-item">·</div>
+        <div class="marquee-item">DROP SHELF</div>
+        <div class="marquee-item">·</div>
+        <div class="marquee-item">CAFFEINE MODE</div>
+        <div class="marquee-item">·</div>
+        <div class="marquee-item">CALENDAR</div>
+        <div class="marquee-item">·</div>
+        <div class="marquee-item">BATTERY</div>
+        <div class="marquee-item">·</div>
+        <div class="marquee-item">CLOCK &amp; TIMER</div>
+        <div class="marquee-item">·</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       FINAL CTA SECTION
+  ============================================================ -->
+  <section class="final-cta" id="download">
+    <div class="container">
+      <div class="cta-inner reveal">
+        <!-- Left vertical track -->
+        <div class="cta-scroll-col cta-scroll-up" aria-hidden="true">
+          <div class="faq-scroll-card">
+            <div class="faq-card-q">Is there a free beta?</div>
+            <div class="faq-card-a">Yes, you can download the fully featured free beta of Raven Notch.</div>
+          </div>
+          <div class="faq-scroll-card">
+            <div class="faq-card-q">What are the system requirements?</div>
+            <div class="faq-card-a">Runs natively on Windows 10/11 with negligible footprint.</div>
+          </div>
+          <div class="faq-scroll-card">
+            <div class="faq-card-q">Does it support Spotify &amp; YouTube?</div>
+            <div class="faq-card-a">Yes, syncs with all active Windows media sessions.</div>
+          </div>
+          <div class="faq-scroll-card">
+            <div class="faq-card-q">How do I customize the layout?</div>
+            <div class="faq-card-a">Right-click the notch to open the Preferences panel.</div>
+          </div>
+          <!-- Loop duplicate -->
+          <div class="faq-scroll-card">
+            <div class="faq-card-q">Is there a free beta?</div>
+            <div class="faq-card-a">Yes, you can download the fully featured free beta of Raven Notch.</div>
+          </div>
+          <div class="faq-scroll-card">
+            <div class="faq-card-q">What are the system requirements?</div>
+            <div class="faq-card-a">Runs natively on Windows 10/11 with negligible footprint.</div>
+          </div>
+          <div class="faq-scroll-card">
+            <div class="faq-card-q">Does it support Spotify &amp; YouTube?</div>
+            <div class="faq-card-a">Yes, syncs with all active Windows media sessions.</div>
+          </div>
+          <div class="faq-scroll-card">
+            <div class="faq-card-q">How do I customize the layout?</div>
+            <div class="faq-card-a">Right-click the notch to open the Preferences panel.</div>
+          </div>
+        </div>
+
+        <div class="cta-content">
+          <div class="section-label">
+            <span class="section-label-icon">❓</span>
+            <span>FAQ</span>
+          </div>
+          <h2 class="cta-heading titlebox-gradient">
+            Transform Your Windows Desktop.
+          </h2>
+          <p class="cta-body">
+            One native executable. Start with a 14-day trial, then unlock lifetime access for <span class="purchase-price-text">₹99</span>.
+          </p>
+          <a href="Raven-Notch.exe" download class="btn-primary btn-cta-main" id="downloadBtnCta">
+            <span class="btn-text-wrap">
+              <span class="btn-text">Download Trial</span>
+              <span class="btn-text">Download Trial</span>
+            </span>
+          </a>
+          <button class="btn-purchase btn-cta-purchase" id="purchaseBtnCta" type="button">
+            <span class="purchase-label">Buy Lifetime</span>
+            <span class="purchase-price">₹99</span>
+          </button>
+          <a href="#features" class="btn-outline">
+            <span class="btn-text-wrap">
+              <span class="btn-text">View Features</span>
+              <span class="btn-text">View Features</span>
+            </span>
+            <span class="btn-outline-arrow">→</span>
+          </a>
+        </div>
+
+        <!-- Right vertical track -->
+        <div class="cta-scroll-col cta-scroll-down" aria-hidden="true">
+          <div class="faq-scroll-card">
+            <div class="faq-card-q">How much CPU does it use?</div>
+            <div class="faq-card-a">Less than 1% CPU at idle due to highly optimized native compilation.</div>
+          </div>
+          <div class="faq-scroll-card">
+            <div class="faq-card-q">How much RAM does it allocate?</div>
+            <div class="faq-card-a">Stays under 40MB RAM on average with zero GC overhead.</div>
+          </div>
+          <div class="faq-scroll-card">
+            <div class="faq-card-q">Can I link Google Calendar?</div>
+            <div class="faq-card-a">Yes, syncs agendas via ICS feeds or Google connection.</div>
+          </div>
+          <div class="faq-scroll-card">
+            <div class="faq-card-q">What is Caffeine Mode?</div>
+            <div class="faq-card-a">A quick toggle that prevents your screen from going to sleep.</div>
+          </div>
+          <!-- Loop duplicate -->
+          <div class="faq-scroll-card">
+            <div class="faq-card-q">How much CPU does it use?</div>
+            <div class="faq-card-a">Less than 1% CPU at idle due to highly optimized native compilation.</div>
+          </div>
+          <div class="faq-scroll-card">
+            <div class="faq-card-q">How much RAM does it allocate?</div>
+            <div class="faq-card-a">Stays under 40MB RAM on average with zero GC overhead.</div>
+          </div>
+          <div class="faq-scroll-card">
+            <div class="faq-card-q">Can I link Google Calendar?</div>
+            <div class="faq-card-a">Yes, syncs agendas via ICS feeds or Google connection.</div>
+          </div>
+          <div class="faq-scroll-card">
+            <div class="faq-card-q">What is Caffeine Mode?</div>
+            <div class="faq-card-a">A quick toggle that prevents your screen from going to sleep.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       FOOTER
+  ============================================================ -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <div class="footer-logo">
+            <img src="logo.svg" alt="Raven Notch Logo" class="footer-logo-img" />
+            <span class="nav-logo-text">Raven Notch</span>
+          </div>
+          <p class="footer-tagline">ravennotch.me</p>
+        </div>
+        <div class="footer-links">
+          <a href="#features" class="footer-link">Features</a>
+          <a href="#download" class="footer-link">Download</a>
+          <a href="#download" class="footer-link">FAQ</a>
+        </div>
+      </div>
+      <div class="footer-divider"></div>
+      <div class="footer-bottom">
+        <p class="footer-copy">&copy; 2026 RavenNotch · All Rights Reserved</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ============================================================
+       LEGAL MODAL (Privacy Policy / Terms of Service)
+  ============================================================ -->
+  <div class="legal-modal-overlay" id="legalModal">
+    <div class="legal-modal-card">
+      <div class="legal-modal-header">
+        <h3 class="legal-modal-title" id="legalModalTitle">Privacy Policy</h3>
+        <button class="legal-modal-close" id="legalModalClose" aria-label="Close modal">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="legal-modal-body" id="legalModalBody">
+        <!-- Injected dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       FEEDBACK MODAL
+  ============================================================ -->
+  <div class="legal-modal-overlay" id="feedbackModal">
+    <div class="legal-modal-card" style="max-width: 520px;">
+      <div class="legal-modal-header">
+        <h3 class="legal-modal-title">Share Your Feedback</h3>
+        <button class="legal-modal-close" id="feedbackModalClose" aria-label="Close modal">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="legal-modal-body">
+        <form class="feedback-form" id="feedbackForm">
+          <div class="form-group">
+            <label for="fbUsername">Username / Handle</label>
+            <input type="text" id="fbUsername" placeholder="e.g. @creative_dev" required maxlength="25" />
+          </div>
+          <div class="form-group">
+            <label for="fbQuote">Feedback Quote</label>
+            <textarea id="fbQuote" placeholder="What do you think about Raven Notch? What features do you love?" required maxlength="160" rows="4"></textarea>
+            <span class="form-char-counter"><span id="fbCharCount">0</span>/160</span>
+          </div>
+          <div class="form-group">
+            <label>Star Rating</label>
+            <div class="star-rating-selector" id="starSelector">
+              <button type="button" class="star-btn" data-value="1" aria-label="1 Star">★</button>
+              <button type="button" class="star-btn" data-value="2" aria-label="2 Stars">★</button>
+              <button type="button" class="star-btn" data-value="3" aria-label="3 Stars">★</button>
+              <button type="button" class="star-btn" data-value="4" aria-label="4 Stars">★</button>
+              <button type="button" class="star-btn" data-value="5" aria-label="5 Stars">★</button>
+            </div>
+            <input type="hidden" id="fbRating" value="5" />
+          </div>
+          <button type="submit" class="btn-primary feedback-submit-btn">
+            <span class="btn-text-wrap" style="height: 18px;">
+              <span class="btn-text">Submit Review</span>
+            </span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="login-modal-overlay" id="loginModal" aria-hidden="true">
+    <div class="login-modal-card">
+      <button class="login-modal-close" id="loginModalClose" type="button" aria-label="Close login">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+      <img src="logo.svg" alt="Raven Notch" class="login-modal-logo" />
+      <h3 id="loginModalTitle">Log in to Raven Notch</h3>
+      <p id="loginModalSubtitle">Use your Raven account to manage purchases and activate the app.</p>
+      <div class="login-provider-row">
+        <a class="login-provider-btn" href="/api/auth/google/start" id="loginGoogleBtn" aria-label="Continue with Google">
+          <svg viewBox="0 0 48 48" aria-hidden="true">
+            <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.5 30.4.2 24 .2 14.7.2 6.7 5.5 2.8 13.2l7.9 6.1C12.6 13.5 17.9 9.5 24 9.5Z"/>
+            <path fill="#4285F4" d="M46.9 24.5c0-1.6-.1-2.8-.4-4.1H24v8.3h13.2c-.3 2.1-1.7 5.3-4.9 7.5l7.7 6c4.5-4.2 6.9-10.3 6.9-17.7Z"/>
+            <path fill="#FBBC05" d="M10.7 28.7c-.5-1.5-.8-3.1-.8-4.7s.3-3.2.8-4.7l-7.9-6.1C1.1 16.5.2 20.1.2 24s.9 7.5 2.6 10.8l7.9-6.1Z"/>
+            <path fill="#34A853" d="M24 47.8c6.4 0 11.8-2.1 15.8-5.7l-7.7-6c-2.1 1.4-4.8 2.4-8.1 2.4-6.1 0-11.3-4-13.2-9.6l-7.9 6.1c3.8 7.5 11.8 12.8 21.1 12.8Z"/>
+          </svg>
+          <span>Continue with Google</span>
+        </a>
+      </div>
+      <div class="login-modal-divider">or</div>
+      <form class="login-account-form active" id="loginAccountForm" novalidate>
+        <input type="email" name="email" placeholder="Email address" autocomplete="email" required />
+        <input type="password" name="password" placeholder="Password" autocomplete="current-password" required />
+        <button class="login-submit-btn" type="submit">Log in</button>
+      </form>
+      <form class="login-account-form" id="signupAccountForm" novalidate>
+        <input type="text" name="name" placeholder="Name" autocomplete="name" required />
+        <input type="text" name="username" placeholder="Username" autocomplete="username" autocapitalize="none" spellcheck="false" pattern="[a-z0-9._-]{3,24}" title="Use 3-24 characters: lowercase letters, numbers, dot, underscore, or hyphen. Spaces are not allowed." required />
+        <p class="login-field-hint">Username: 3-24 chars, lowercase letters, numbers, dot, underscore, or hyphen.</p>
+        <input type="email" name="email" placeholder="Email address" autocomplete="email" required />
+        <input type="password" name="password" placeholder="Password" autocomplete="new-password" required minlength="6" />
+        <button class="login-submit-btn" type="submit">Create account</button>
+        <p class="login-terms-note">By continuing you agree to our Terms of Service.</p>
+      </form>
+      <div class="login-error-text" id="loginErrorText"></div>
+      <button class="login-switch-btn" id="loginSwitchBtn" type="button">Don't have an account? Sign up →</button>
+    </div>
+  </div>
+
+
+
+  <div class="toast" id="toast">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="12" y1="16" x2="12" y2="12"></line>
+      <line x1="12" y1="8" x2="12.01" y2="8"></line>
+    </svg>
+    <span id="toastText">Coming Soon!</span>
+  </div>
+
+  <div class="license-result-modal" id="licenseResultModal" aria-hidden="true">
+    <div class="license-result-card">
+      <button class="license-result-close" id="licenseResultClose" type="button" aria-label="Close" onclick="if(window.closeLicenseModal){window.closeLicenseModal();}else{document.getElementById('licenseResultModal').classList.remove('show');document.getElementById('licenseResultModal').setAttribute('aria-hidden','true');}">×</button>
+      <div class="license-result-kicker" style="color: #4ade80;">Purchase successful!</div>
+      <h3>Thank You & Congratulations! 🎉</h3>
+      <p style="margin-bottom: 24px; line-height: 1.5; color: #a1a1aa;">Your purchase is complete and your Raven Notch app has been activated on your email! Simply log in to the app with your account to get lifetime access.</p>
+      <button class="btn-primary license-copy-btn" id="licenseResultCloseBtn" type="button" style="width: 100%;" onclick="if(window.closeLicenseModal){window.closeLicenseModal();}else{document.getElementById('licenseResultModal').classList.remove('show');document.getElementById('licenseResultModal').setAttribute('aria-hidden','true');}">
+        <span class="btn-text-wrap">
+          <span class="btn-text">Got it, thanks!</span>
+          <span class="btn-text">Got it, thanks!</span>
+        </span>
+      </button>
+    </div>
+  </div>
+
+  <div class="email-capture-modal" id="emailCaptureModal" aria-hidden="true">
+    <form class="email-capture-card" id="emailCaptureForm">
+      <button class="email-capture-close" id="emailCaptureClose" type="button" aria-label="Close">×</button>
+      <div class="email-capture-kicker">Raven Notch license</div>
+      <h3>Enter your email</h3>
+      <p>Your license key and receipt will be sent here after payment.</p>
+      <input id="purchaseEmailInput" class="email-capture-input input" name="email" type="email" autocomplete="email" placeholder="Email" required />
+      <div style="font-size: 11px; color: #a1a1aa; margin-top: 10px; margin-bottom: 12px; line-height: 1.4; text-align: left; opacity: 0.85;">
+        ℹ️ Note: Payment will be securely processed under our registered legal name: <strong>Raunak Shrivastva</strong>.
+      </div>
+      <button class="btn-primary email-capture-submit" type="submit">
+        <span class="btn-text-wrap">
+          <span class="btn-text">Continue to Payment</span>
+          <span class="btn-text">Continue to Payment</span>
+        </span>
+      </button>
+    </form>
+  </div>
+
+  <div class="payment-verify-modal" id="paymentVerifyModal" aria-hidden="true">
+    <div class="payment-verify-content">
+      <div class="payment-verify-loader" aria-hidden="true">
+        <div class="payment-verify-box"></div>
+        <div class="payment-verify-box"></div>
+        <div class="payment-verify-box"></div>
+        <div class="payment-verify-box"></div>
+        <div class="payment-verify-box"></div>
+      </div>
+      <div class="payment-verify-text">Verifying payment</div>
+    </div>
+  </div>
+
+  <!-- SVG Filter for Liquid Glass Refraction & Gooey Effects -->
+  <svg style="display: none;" aria-hidden="true">
+    <filter id="lg-dist" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.012 0.012" numOctaves="2" seed="92" result="noise" />
+      <feGaussianBlur in="noise" stdDeviation="3" result="blurred" />
+      <feDisplacementMap in="SourceGraphic" in2="blurred" scale="40" xChannelSelector="R" yChannelSelector="G" />
+    </filter>
+    <filter id="gooey-filter">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="blur" />
+      <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -8" result="goo" />
+      <feComposite in="SourceGraphic" in2="goo" operator="atop" />
+    </filter>
+  </svg>
+
+  <!-- Canvas for dark motion particle background -->
+  <canvas id="bgCanvas" class="bg-canvas"></canvas>
+
+  <!-- Download Loader Overlay -->
+  <div id="downloadOverlay" class="download-overlay">
+    <div class="loader-wrapper">
+      <span class="loader-letter">D</span>
+      <span class="loader-letter">o</span>
+      <span class="loader-letter">w</span>
+      <span class="loader-letter">n</span>
+      <span class="loader-letter">l</span>
+      <span class="loader-letter">o</span>
+      <span class="loader-letter">a</span>
+      <span class="loader-letter">d</span>
+      <span class="loader-letter">i</span>
+      <span class="loader-letter">n</span>
+      <span class="loader-letter">g</span>
+      <span class="loader-letter">.</span>
+      <span class="loader-letter">.</span>
+      <span class="loader-letter">.</span>
+      <div class="loader"></div>
+    </div>
+    </div>
+
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script src="app.js?v=1.0.29"></script>
+</body>
+</html>

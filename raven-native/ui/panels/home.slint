@@ -1,0 +1,1248 @@
+import { SlintCalendarEvent, SlintCalendarDay, SlintMiniCalendarDay, SlintMediaSession } from "../types.slint";
+import { ScrollView } from "std-widgets.slint";
+
+export component HomePanel inherits HorizontalLayout {
+    in property <bool> has-media-art;
+    in property <float> album-flip-scale: 1.0;
+    in property <color> media-accent-color: #0066FF;
+    in property <image> media-art-url;
+    in property <string> media-title;
+    in property <string> media-artist;
+    in property <string> media-album;
+    in property <float> media-pct;
+    in property <string> media-pos-str;
+    in property <string> media-dur-str;
+    in-out property <bool> is-playing;
+
+    in property <[SlintCalendarEvent]> calendar-events;
+    in property <[SlintCalendarDay]> calendar-days;
+    in property <[SlintCalendarEvent]> filtered-calendar-events;
+    in-out property <int> selected-day-index: 0;
+    in property <string> selected-month: "";
+    in property <string> selected-year: "";
+    in property <string> selected-day-label: "";
+    in property <bool> google-connected: false;
+    in property <bool> google-busy: false;
+    in property <string> google-message: "";
+    in property <bool> premium-locked: false;
+    in property <bool> tab-calendar: true;
+    in property <bool> has-media-source-icon: false;
+    in property <image> media-source-icon-url;
+    in property <bool> media-adaptive-accent: true;
+    in property <bool> show-source: true;
+    in property <bool> media-full-calendar-on-no-media: false;
+    property <bool> show-full-calendar: root.media-full-calendar-on-no-media && root.media-title == "";
+    in property <[SlintMediaSession]> media-sessions: [];
+
+    in-out property <bool> show-mini-calendar: false;
+    in-out property <string> picker-mode: "days";
+    in-out property <int> mini-calendar-view-month: 1;
+    in-out property <int> mini-calendar-view-year: 2026;
+    in property <[SlintMiniCalendarDay]> mini-calendar-days: [];
+    in property <[int]> mini-calendar-years: [];
+    in property <[string]> mini-calendar-months: ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+
+    // Play/Pause scale & glow properties
+    property <float> play-scale: root.is-playing ? 1.0 : 0.92;
+    property <color> glow-color: rgba(root.media-accent-color.red, root.media-accent-color.green, root.media-accent-color.blue, (root.is-playing && root.media-adaptive-accent) ? 0.14 : 0.0);
+    property <color> glow-color-dim: rgba(root.media-accent-color.red, root.media-accent-color.green, root.media-accent-color.blue, (root.is-playing && root.media-adaptive-accent) ? 0.09 : 0.0);
+    property <length> glow-size: root.is-playing ? 320px : 160px;
+    property <length> shadow-blur: root.is-playing ? 36px : 16px;
+    property <length> shadow-offset: root.is-playing ? 8px : 4px;
+    property <color> shadow-color: root.is-playing ? rgba(0, 0, 0, 0.5) : rgba(0, 0, 0, 0.3);
+
+    animate play-scale { duration: 350ms; easing: cubic-bezier(0.34, 1.56, 0.64, 1); }
+    animate glow-color { duration: 600ms; easing: ease-in-out; }
+    animate glow-color-dim { duration: 600ms; easing: ease-in-out; }
+    animate glow-size { duration: 800ms; easing: cubic-bezier(0.16, 1.0, 0.3, 1.0); }
+    animate shadow-blur { duration: 350ms; easing: ease-out; }
+    animate shadow-offset { duration: 350ms; easing: ease-out; }
+    animate shadow-color { duration: 350ms; easing: ease-out; }
+
+    callback prev();
+    callback play-pause();
+    callback next();
+    callback google-sign-in();
+    callback buy-license();
+    callback select-day(int);
+    callback month-year-double-clicked();
+    callback mini-calendar-change-month-year(int, int);
+    callback mini-calendar-select-date(int, int, int);
+    callback mini-calendar-close();
+    callback seek-backward();
+    callback seek-forward();
+    callback switch-media-source(string);
+
+    spacing: root.tab-calendar ? 24px : 0px;
+    height: 100%;
+    alignment: root.tab-calendar ? start : stretch;
+
+    // ── LEFT COLUMN: MUSIC WIDGET ──
+    Rectangle {
+        width: root.tab-calendar ? 340px : 688px;
+        height: 100%;
+
+        if !root.show-full-calendar : Rectangle {
+            width: 100%;
+            height: 100%;
+
+            // Ambient glow that spreads from behind the media area (dual-source centered)
+            Rectangle {
+                width: root.glow-size;
+                height: root.glow-size;
+                x: 70px - self.width / 2;
+                y: (parent.height - self.height) / 2;
+                background: @radial-gradient(circle, root.glow-color 0%, transparent 65%);
+            }
+            Rectangle {
+                width: root.glow-size * 1.25;
+                height: root.glow-size * 0.9;
+                x: (parent.width - 140px) / 2 + 140px - self.width / 2;
+                y: (parent.height - self.height) / 2;
+                background: @radial-gradient(circle, root.glow-color-dim 0%, transparent 65%);
+            }
+
+            HorizontalLayout {
+                spacing: 18px;
+                width: 100%;
+                height: 100%;
+
+                // Album Art Column
+                VerticalLayout {
+                    width: 140px;
+                    height: 100%;
+                    alignment: center;
+                    spacing: 8px;
+
+                    // Album Art – simple rectangular display
+                    Rectangle {
+                        width: 140px;
+                        height: 140px;
+
+                        // Scalable & flippable visual card container
+                        Rectangle {
+                            width: 140px * root.play-scale * root.album-flip-scale;
+                            height: 140px * root.play-scale;
+                            x: (parent.width - self.width) / 2;
+                            y: (parent.height - self.height) / 2;
+                            border-radius: 24px;
+                            background: rgba(255, 255, 255, 0.06);
+                            drop-shadow-blur: root.shadow-blur;
+                            drop-shadow-color: root.shadow-color;
+                            drop-shadow-offset-y: root.shadow-offset;
+                            clip: true;
+
+                            if root.has-media-art: Image {
+                                width: 100%;
+                                height: 100%;
+                                source: root.media-art-url;
+                                image-fit: cover;
+                            }
+                            if !root.has-media-art: Text {
+                                width: 100%;
+                                height: 100%;
+                                text: "♪";
+                                font-size: 38px;
+                                color: rgba(255, 255, 255, 0.3);
+                                vertical-alignment: center;
+                                horizontal-alignment: center;
+                            }
+                        }
+
+                        // Split Touch Areas for Left (prev) and Right (next) clicks
+                        TouchArea {
+                            width: parent.width / 2;
+                            height: 100%;
+                            x: 0;
+                            clicked => { root.prev(); }
+                        }
+                        TouchArea {
+                            width: parent.width / 2;
+                            height: 100%;
+                            x: parent.width / 2;
+                            clicked => { root.next(); }
+                        }
+
+                        // Source Icon Circle (bottom right)
+                        if root.show-source: Rectangle {
+                            x: (parent.width - 140px * root.play-scale * root.album-flip-scale) / 2 + (140px * root.play-scale * root.album-flip-scale) - 24px;
+                            y: (parent.height - 140px * root.play-scale) / 2 + (140px * root.play-scale) - 24px;
+                            width: 28px;
+                            height: 28px;
+                            background: rgba(0, 0, 0, 0.82);
+                            border-width: 2px;
+                            border-color: rgba(0, 0, 0, 0.95);
+                            border-radius: 14px;
+                            drop-shadow-blur: 12px;
+                            drop-shadow-color: rgba(0, 0, 0, 0.45);
+                            drop-shadow-offset-y: 4px;
+
+                            if root.has-media-source-icon: Image {
+                                width: 18px;
+                                height: 18px;
+                                source: root.media-source-icon-url;
+                                x: (parent.width - self.width) / 2;
+                                y: (parent.height - self.height) / 2;
+                            }
+                            if !root.has-media-source-icon: Image {
+                                width: 15px;
+                                height: 15px;
+                                source: @image-url("../assets/waveform.svg");
+                                colorize: white;
+                                x: (parent.width - self.width) / 2;
+                                y: (parent.height - self.height) / 2;
+                            }
+                        }
+                    }
+
+                    // Multiple Media Sources Row (aligned beneath the album art)
+                    if root.media-sessions.length > 1: HorizontalLayout {
+                        height: 22px;
+                        spacing: 4px;
+                        alignment: center;
+                        
+                        for sess in root.media-sessions: Rectangle {
+                            width: 22px;
+                            height: 22px;
+                            border-radius: 11px;
+                            background: sess.is-active ? #0066FF : rgba(0, 0, 0, 0.85);
+                            border-width: 1.5px;
+                            border-color: sess.is-active ? #0066FF : rgba(255, 255, 255, 0.15);
+                            
+                            Image {
+                                width: 12px;
+                                height: 12px;
+                                source: sess.icon;
+                                x: (parent.width - self.width) / 2;
+                                y: (parent.height - self.height) / 2;
+                            }
+                            
+                            TouchArea {
+                                clicked => {
+                                    root.switch-media-source(sess.source-id);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Track Info + Controls
+                VerticalLayout {
+                    alignment: center;
+                    spacing: 9px;
+
+                    // Title and Artist
+                    VerticalLayout {
+                        spacing: 3px;
+                        Text {
+                            text: root.media-title == "" ? "No Media Playing" : root.media-title;
+                            font-size: 19px;
+                            font-weight: 800;
+                            color: white;
+                            overflow: elide;
+                        }
+                        Text {
+                            text: root.media-artist == "" ? "Connect your player" : root.media-artist;
+                            font-size: 14px;
+                            font-weight: 600;
+                            color: rgba(255, 255, 255, 0.55);
+                            overflow: elide;
+                        }
+                    }
+
+                    // Progress bar
+                    VerticalLayout {
+                        spacing: 5px;
+                        Rectangle {
+                            height: 5px;
+                            background: rgba(255, 255, 255, 0.12);
+                            border-radius: 2.5px;
+                            Rectangle {
+                                x: 0;
+                                width: parent.width * root.media-pct / 100.0;
+                                height: 100%;
+                                background: white;
+                                border-radius: 2.5px;
+                            }
+                        }
+                        HorizontalLayout {
+                            alignment: space-between;
+                            Text { text: root.media-pos-str; font-size: 11px; font-weight: 700; color: rgba(255, 255, 255, 0.4); }
+                            Text { text: root.media-dur-str; font-size: 11px; font-weight: 700; color: rgba(255, 255, 255, 0.4); }
+                        }
+                    }
+
+                    // Playback Controls
+                    HorizontalLayout {
+                        alignment: start;
+                        spacing: 18px;
+
+                        TouchArea {
+                            width: 18px; height: 18px;
+                            mouse-cursor: pointer;
+                            clicked => { root.seek-backward(); }
+                            Path {
+                                width: parent.has-hover ? 20px : 18px;
+                                height: parent.has-hover ? 20px : 18px;
+                                x: (parent.width - self.width) / 2;
+                                y: (parent.height - self.height) / 2;
+                                stroke: rgba(255, 255, 255, 0.6);
+                                stroke-width: 1.8px;
+                                fill: transparent;
+                                viewbox-width: 24; viewbox-height: 24;
+                                commands: "M 3 12 A 9 9 0 1 0 12 3 A 9.75 9.75 0 0 0 5.26 5.74 L 3 8 M 3 3 V 8 H 8";
+                                animate width, height { duration: 150ms; easing: cubic-bezier(0.34, 1.56, 0.64, 1); }
+                            }
+                            Text {
+                                text: "10";
+                                font-size: parent.has-hover ? 7px : 6px;
+                                font-weight: 800;
+                                color: rgba(255, 255, 255, 0.8);
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+                                x: 0px;
+                                y: 0.5px;
+                                width: 100%;
+                                height: 100%;
+                                animate font-size { duration: 150ms; }
+                            }
+                        }
+                        TouchArea {
+                            width: 22px; height: 22px;
+                            mouse-cursor: pointer;
+                            clicked => { root.prev(); }
+                            Path {
+                                width: parent.has-hover ? 25px : 22px;
+                                height: parent.has-hover ? 25px : 22px;
+                                x: (parent.width - self.width) / 2;
+                                y: (parent.height - self.height) / 2;
+                                fill: white;
+                                viewbox-width: 24; viewbox-height: 24;
+                                commands: "M 6 6 L 8 6 L 8 18 L 6 18 Z M 9.5 12 L 18 18 L 18 6 Z";
+                                animate width, height { duration: 150ms; easing: cubic-bezier(0.34, 1.56, 0.64, 1); }
+                            }
+                        }
+                        TouchArea {
+                            width: 30px; height: 30px;
+                            mouse-cursor: pointer;
+                            clicked => {
+                                root.is-playing = !root.is-playing;
+                                root.play-pause();
+                            }
+                            if !root.is-playing: Path {
+                                width: parent.has-hover ? 34px : 30px;
+                                height: parent.has-hover ? 34px : 30px;
+                                x: (parent.width - self.width) / 2;
+                                y: (parent.height - self.height) / 2;
+                                fill: white;
+                                viewbox-width: 24; viewbox-height: 24;
+                                commands: "M 8 5 L 8 19 L 19 12 Z";
+                                animate width, height { duration: 150ms; easing: cubic-bezier(0.34, 1.56, 0.64, 1); }
+                            }
+                            if root.is-playing: Path {
+                                width: parent.has-hover ? 34px : 30px;
+                                height: parent.has-hover ? 34px : 30px;
+                                x: (parent.width - self.width) / 2;
+                                y: (parent.height - self.height) / 2;
+                                fill: white;
+                                viewbox-width: 24; viewbox-height: 24;
+                                commands: "M 6 19 L 10 19 L 10 5 L 6 5 Z M 14 5 L 14 19 L 18 19 L 18 5 Z";
+                                animate width, height { duration: 150ms; easing: cubic-bezier(0.34, 1.56, 0.64, 1); }
+                            }
+                        }
+                        TouchArea {
+                            width: 22px; height: 22px;
+                            mouse-cursor: pointer;
+                            clicked => { root.next(); }
+                            Path {
+                                width: parent.has-hover ? 25px : 22px;
+                                height: parent.has-hover ? 25px : 22px;
+                                x: (parent.width - self.width) / 2;
+                                y: (parent.height - self.height) / 2;
+                                fill: white;
+                                viewbox-width: 24; viewbox-height: 24;
+                                commands: "M 6 18 L 14.5 12 L 6 6 Z M 16 6 L 16 18 L 18 18 L 18 6 Z";
+                                animate width, height { duration: 150ms; easing: cubic-bezier(0.34, 1.56, 0.64, 1); }
+                            }
+                        }
+                        TouchArea {
+                            width: 18px; height: 18px;
+                            mouse-cursor: pointer;
+                            clicked => { root.seek-forward(); }
+                            Path {
+                                width: parent.has-hover ? 20px : 18px;
+                                height: parent.has-hover ? 20px : 18px;
+                                x: (parent.width - self.width) / 2;
+                                y: (parent.height - self.height) / 2;
+                                stroke: rgba(255, 255, 255, 0.6);
+                                stroke-width: 1.8px;
+                                fill: transparent;
+                                viewbox-width: 24; viewbox-height: 24;
+                                commands: "M 21 12 A 9 9 0 1 1 12 3 A 9.75 9.75 0 0 1 18.74 5.74 L 21 8 M 21 3 V 8 H 16";
+                                animate width, height { duration: 150ms; easing: cubic-bezier(0.34, 1.56, 0.64, 1); }
+                            }
+                            Text {
+                                text: "10";
+                                font-size: parent.has-hover ? 7px : 6px;
+                                font-weight: 800;
+                                color: rgba(255, 255, 255, 0.8);
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+                                x: 0px;
+                                y: 0.5px;
+                                width: 100%;
+                                height: 100%;
+                                animate font-size { duration: 150ms; }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if root.show-full-calendar : VerticalLayout {
+            padding-left: 14px;
+            padding-right: 14px;
+            padding-top: 10px;
+            padding-bottom: 10px;
+            spacing: 6px;
+
+            // Month & Year Header + Navigation Arrows
+            HorizontalLayout {
+                alignment: space-between;
+                height: 28px;
+
+                Text {
+                    text: root.mini-calendar-months[root.mini-calendar-view-month - 1] + " " + root.mini-calendar-view-year;
+                    font-size: 16px;
+                    font-weight: 900;
+                    color: white;
+                    vertical-alignment: center;
+                }
+
+                HorizontalLayout {
+                    spacing: 12px;
+                    alignment: end;
+                    
+                    // Previous Month Arrow
+                    TouchArea {
+                        width: 24px;
+                        height: 24px;
+                        mouse-cursor: pointer;
+                        clicked => {
+                            if (root.mini-calendar-view-month == 1) {
+                                root.mini-calendar-view-month = 12;
+                                root.mini-calendar-view-year = root.mini-calendar-view-year - 1;
+                            } else {
+                                root.mini-calendar-view-month = root.mini-calendar-view-month - 1;
+                            }
+                            root.mini-calendar-change-month-year(root.mini-calendar-view-month, root.mini-calendar-view-year);
+                        }
+                        Path {
+                            width: parent.has-hover ? 11px : 9px;
+                            height: parent.has-hover ? 11px : 9px;
+                            x: (parent.width - self.width) / 2;
+                            y: (parent.height - self.height) / 2;
+                            stroke: parent.has-hover ? white : rgba(255, 255, 255, 0.7);
+                            stroke-width: 2.2px;
+                            viewbox-width: 24;
+                            viewbox-height: 24;
+                            commands: "M 16 20 L 8 12 L 16 4";
+                            animate stroke, width, height { duration: 120ms; }
+                        }
+                    }
+
+                    // Next Month Arrow
+                    TouchArea {
+                        width: 24px;
+                        height: 24px;
+                        mouse-cursor: pointer;
+                        clicked => {
+                            if (root.mini-calendar-view-month == 12) {
+                                root.mini-calendar-view-month = 1;
+                                root.mini-calendar-view-year = root.mini-calendar-view-year + 1;
+                            } else {
+                                root.mini-calendar-view-month = root.mini-calendar-view-month + 1;
+                            }
+                            root.mini-calendar-change-month-year(root.mini-calendar-view-month, root.mini-calendar-view-year);
+                        }
+                        Path {
+                            width: parent.has-hover ? 11px : 9px;
+                            height: parent.has-hover ? 11px : 9px;
+                            x: (parent.width - self.width) / 2;
+                            y: (parent.height - self.height) / 2;
+                            stroke: parent.has-hover ? white : rgba(255, 255, 255, 0.7);
+                            stroke-width: 2.2px;
+                            viewbox-width: 24;
+                            viewbox-height: 24;
+                            commands: "M 8 20 L 16 12 L 8 4";
+                            animate stroke, width, height { duration: 120ms; }
+                        }
+                    }
+                }
+            }
+
+            // Weekdays row
+            HorizontalLayout {
+                height: 16px;
+                spacing: 4px;
+                for day-name in ["S", "M", "T", "W", "T", "F", "S"]: Text {
+                    text: day-name;
+                    font-size: 9px;
+                    font-weight: 800;
+                    color: rgba(255, 255, 255, 0.35);
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                    width: 40px;
+                }
+            }
+
+            // Grid content (6 rows of 7 columns)
+            VerticalLayout {
+                spacing: 3px;
+                vertical-stretch: 1;
+                for row-idx in [0, 1, 2, 3, 4, 5]: HorizontalLayout {
+                    spacing: 4px;
+                    height: 20px;
+                    for col-idx in [0, 1, 2, 3, 4, 5, 6]: TouchArea {
+                        property <int> cell-idx: row-idx * 7 + col-idx;
+                        enabled: root.mini-calendar-days.length > self.cell-idx && root.mini-calendar-days[self.cell-idx].day_num != "";
+                        clicked => {
+                            root.mini-calendar-select-date(self.cell-idx, root.mini-calendar-view-month, root.mini-calendar-view-year);
+                        }
+
+                        Rectangle {
+                            width: 40px;
+                            height: 20px;
+                            border-radius: 4px;
+                            background: (root.mini-calendar-days.length > cell-idx && root.mini-calendar-days[cell-idx].is_selected) ? #0066FF : transparent;
+                            
+                            states [
+                                hover when parent.has-hover && root.mini-calendar-days.length > cell-idx && root.mini-calendar-days[cell-idx].day_num != "": {
+                                    background: rgba(255, 255, 255, 0.08);
+                                }
+                            ]
+
+                            if root.mini-calendar-days.length > cell-idx: Text {
+                                text: root.mini-calendar-days[cell-idx].day_num;
+                                font-size: 11px;
+                                font-weight: root.mini-calendar-days[cell-idx].is_today ? 900 : 600;
+                                color: root.mini-calendar-days[cell-idx].is_selected ? white : (root.mini-calendar-days[cell-idx].is_today ? #0066FF : (root.mini-calendar-days[cell-idx].is_current_month ? white : rgba(255, 255, 255, 0.25)));
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // ── DIVIDER ──
+    if root.tab-calendar: Rectangle {
+        width: 1px;
+        height: 126px;
+        background: rgba(255, 255, 255, 0.07);
+        y: (parent.height - self.height) / 2;
+    }
+
+    // ── RIGHT COLUMN: CALENDAR ──
+    if root.tab-calendar: Rectangle {
+        width: 300px;
+        height: 100%;
+
+        // Standard Calendar View
+        VerticalLayout {
+            width: 100%;
+            height: 100%;
+            spacing: 6px;
+            visible: !root.show-mini-calendar;
+            opacity: root.premium-locked ? 0.34 : 1.0;
+            animate opacity { duration: 160ms; easing: ease-in-out; }
+
+            // Month + Day Strip
+            if !root.show-full-calendar : HorizontalLayout {
+                spacing: 14px;
+                alignment: start;
+                height: 38px;
+                
+                // Month Year (Left) - Clickable for Mini Calendar Picker
+                month-year-touch := TouchArea {
+                    width: 60px;
+                    height: 38px;
+                    mouse-cursor: pointer;
+                    enabled: !root.premium-locked;
+                    clicked => {
+                        root.month-year-double-clicked();
+                    }
+
+                    Rectangle {
+                        width: 100%;
+                        height: 100%;
+                        border-radius: 6px;
+                        background: month-year-touch.has-hover ? rgba(255, 255, 255, 0.07) : transparent;
+                        animate background { duration: 150ms; easing: ease-in-out; }
+
+                        VerticalLayout {
+                            alignment: center;
+                            width: 100%;
+                            height: 100%;
+                            padding-top: month-year-touch.has-hover ? -1px : 0px;
+                            animate padding-top { duration: 150ms; easing: ease-in-out; }
+
+                            Text {
+                                text: root.calendar-days.length > 0 ? root.calendar-days[scrubber.scrubbed-index].month-name : root.selected-month;
+                                font-size: month-year-touch.has-hover ? 17px : 16px;
+                                font-weight: 800;
+                                color: month-year-touch.has-hover ? rgba(255, 255, 255, 1.0) : white;
+                                horizontal-alignment: center;
+                                animate font-size { duration: 150ms; easing: ease-in-out; }
+                            }
+                            Text {
+                                text: root.calendar-days.length > 0 ? root.calendar-days[scrubber.scrubbed-index].year : root.selected-year;
+                                font-size: month-year-touch.has-hover ? 14px : 13px;
+                                font-weight: 600;
+                                color: month-year-touch.has-hover ? rgba(255, 255, 255, 0.65) : rgba(255, 255, 255, 0.4);
+                                horizontal-alignment: center;
+                                animate font-size { duration: 150ms; easing: ease-in-out; }
+                                animate color { duration: 150ms; easing: ease-in-out; }
+                            }
+                        }
+                    }
+                }
+
+                // Date Scrubber (Horizontal scrollable Flickable)
+                scrubber := Flickable {
+                    property <int> scrubbed-index: root.calendar-days.length > 0 ? Math.clamp(Math.round(((118px - self.viewport-x) / 1px) / 36.0), 0, root.calendar-days.length - 1) : 0;
+                    width: 236px;
+                    viewport-width: root.calendar-days.length * 36px;
+                    viewport-height: 10000px;
+                    viewport-y: -5000px;
+                    viewport-x: Math.clamp(102px - root.selected-day-index * 36px, -(root.calendar-days.length * 36px - 236px), 0px);
+                    interactive: !root.premium-locked;
+
+                    animate viewport-x { duration: 250ms; easing: ease-out; }
+
+                    HorizontalLayout {
+                        y: -scrubber.viewport-y;
+                        height: 38px;
+                        spacing: 4px;
+                        for day[idx] in root.calendar-days: TouchArea {
+                            width: 32px;
+                            height: 38px;
+                            enabled: !root.premium-locked;
+                            clicked => {
+                                root.select-day(idx);
+                            }
+
+                            VerticalLayout {
+                                alignment: start;
+                                width: 32px;
+                                spacing: 2px;
+                                Text {
+                                    text: day.day-name;
+                                    font-size: 9px;
+                                    font-weight: 900;
+                                    color: root.selected-day-index == idx ? #0066FF : (day.is-today ? #ffffff : rgba(255, 255, 255, 0.25));
+                                    horizontal-alignment: center;
+                                }
+                                Rectangle {
+                                    width: 24px;
+                                    height: 24px;
+                                    border-radius: 12px;
+                                    background: root.selected-day-index == idx ? #0066FF : transparent;
+                                    x: 4px;
+
+                                    Text {
+                                        width: 100%;
+                                        height: 100%;
+                                        text: day.day-num;
+                                        font-size: 12px;
+                                        font-weight: 900;
+                                        color: root.selected-day-index == idx ? white : (day.is-today ? #0066FF : rgba(255,255,255,0.3));
+                                        horizontal-alignment: center;
+                                        vertical-alignment: center;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Selected Day Label
+            HorizontalLayout {
+                alignment: center;
+                height: 22px;
+                spacing: 8px;
+                VerticalLayout {
+                    alignment: center;
+                    Rectangle {
+                        width: 7px;
+                        height: 7px;
+                        border-radius: 3.5px;
+                        background: #0066FF;
+                        drop-shadow-blur: 12px;
+                        drop-shadow-color: rgba(0,102,255,0.75);
+                    }
+                }
+                Text {
+                    text: root.selected-day-label;
+                    font-size: 12px;
+                    font-weight: 850;
+                    color: rgba(255, 255, 255, 0.72);
+                    vertical-alignment: center;
+                }
+            }
+
+            // Events Area
+            Rectangle {
+                background: rgba(255, 255, 255, 0.02);
+                border-radius: 16px;
+                border-width: 1px;
+                border-color: rgba(255, 255, 255, 0.05);
+                vertical-stretch: 1;
+
+                if !root.google-connected: VerticalLayout {
+                    width: 100%;
+                    height: 100%;
+                    alignment: center;
+                    spacing: 0px;
+                    padding-left: 10px;
+                    padding-right: 10px;
+                    padding-top: 8px;
+                    padding-bottom: 8px;
+
+                    HorizontalLayout {
+                        alignment: center;
+                        spacing: 12px;
+                        height: 24px;
+                        Rectangle {
+                            width: 24px;
+                            height: 24px;
+                            background: transparent;
+                            Path {
+                                width: 24px;
+                                height: 24px;
+                                viewbox-width: 48;
+                                viewbox-height: 48;
+                                fill: #EA4335;
+                                commands: "M 24 9.5 C 27.5 9.5 30.6 10.7 33.1 13.1 L 39.9 6.3 C 35.8 2.5 30.4 0.2 24 0.2 C 14.7 0.2 6.7 5.5 2.8 13.2 L 10.7 19.3 C 12.6 13.5 17.9 9.5 24 9.5 Z";
+                            }
+                            Path {
+                                width: 24px;
+                                height: 24px;
+                                viewbox-width: 48;
+                                viewbox-height: 48;
+                                fill: #4285F4;
+                                commands: "M 46.9 24.5 C 46.9 22.9 46.8 21.7 46.5 20.4 L 24 20.4 L 24 28.7 L 37.2 28.7 C 36.9 30.8 35.5 34 32.3 36.2 L 40 42.2 C 44.5 38 46.9 31.9 46.9 24.5 Z";
+                            }
+                            Path {
+                                width: 24px;
+                                height: 24px;
+                                viewbox-width: 48;
+                                viewbox-height: 48;
+                                fill: #FBBC05;
+                                commands: "M 10.7 28.7 C 10.2 27.2 9.9 25.6 9.9 24 C 9.9 22.4 10.2 20.8 10.7 19.3 L 2.8 13.2 C 1.1 16.5 0.2 20.1 0.2 24 C 0.2 27.9 1.1 31.5 2.8 34.8 L 10.7 28.7 Z";
+                            }
+                            Path {
+                                width: 24px;
+                                height: 24px;
+                                viewbox-width: 48;
+                                viewbox-height: 48;
+                                fill: #34A853;
+                                commands: "M 24 47.8 C 30.4 47.8 35.8 45.7 39.8 42.1 L 32.1 36.1 C 30 37.5 27.3 38.5 24 38.5 C 17.9 38.5 12.7 34.5 10.8 28.9 L 2.9 35 C 6.7 42.5 14.7 47.8 24 47.8 Z";
+                            }
+                        }
+                        Path {
+                            width: 20px;
+                            height: 20px;
+                            viewbox-width: 24;
+                            viewbox-height: 24;
+                            stroke: rgba(255,255,255,0.88);
+                            stroke-width: 2.8px;
+                            fill: transparent;
+                            commands: "M 10 13 C 12 15 15 15 17.1 13 L 19.5 10.6 C 22 8.1 22 4 19.5 1.5 C 17 -1 12.9 -1 10.4 1.5 L 11 4.9 M 14 11 C 12 9 9 9 6.9 11 L 4.5 13.4 C 2 15.9 2 20 4.5 22.5 C 7 25 11.1 25 13.6 22.5 L 13 19.1";
+                        }
+                        Path {
+                            width: 22px;
+                            height: 22px;
+                            viewbox-width: 24;
+                            viewbox-height: 24;
+                            stroke: rgba(255,255,255,0.86);
+                            stroke-width: 2.4px;
+                            fill: transparent;
+                            commands: "M 6.5 4.5 L 17.5 4.5 Q 20.5 4.5 20.5 7.5 L 20.5 17.5 Q 20.5 20.5 17.5 20.5 L 6.5 20.5 Q 3.5 20.5 3.5 17.5 L 3.5 7.5 Q 3.5 4.5 6.5 4.5 M 8 2.8 L 8 6.8 M 16 2.8 L 16 6.8 M 3.5 9 L 20.5 9 M 8 13 L 11 13 M 13.5 13 L 17 13 M 8 16.5 L 11 16.5 M 13.5 16.5 L 17 16.5";
+                        }
+                    }
+
+                    VerticalLayout {
+                        spacing: 1px;
+                        alignment: center;
+                        padding-top: 4px;
+                        Text {
+                            text: "Connect Google Account";
+                            font-size: 12px;
+                            font-weight: 900;
+                            color: white;
+                            horizontal-alignment: center;
+                        }
+                        Text {
+                            text: "Sign in to sync your calendar.";
+                            font-size: 9px;
+                            font-weight: 600;
+                            color: rgba(255, 255, 255, 0.45);
+                            horizontal-alignment: center;
+                        }
+                    }
+
+                    Rectangle { height: 4px; }
+
+                    HorizontalLayout {
+                        alignment: center;
+                        height: 24px;
+                        Rectangle {
+                            width: t-area.has-hover ? 124px : 120px;
+                            height: t-area.has-hover ? 26px : 24px;
+                            border-radius: 7px;
+                            border-width: 1px;
+                            border-color: rgba(255, 255, 255, 0.12);
+                            background: root.google-busy ? rgba(0, 102, 255, 0.58) : (t-area.has-hover ? #0055dd : #0066FF);
+                            drop-shadow-blur: 14px;
+                            drop-shadow-color: rgba(0, 102, 255, 0.24);
+
+                            animate width, height, background { duration: 150ms; easing: cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+                            Text {
+                                text: root.google-busy ? "..." : "Sign in";
+                                font-size: 12px;
+                                font-weight: 850;
+                                color: white;
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+                            }
+                            t-area := TouchArea {
+                                width: 100%;
+                                height: 100%;
+                                mouse-cursor: pointer;
+                                enabled: !root.google-busy && !root.premium-locked;
+                                clicked => { root.google-sign-in(); }
+                            }
+                        }
+                    }
+
+                    if root.google-message != "": Text {
+                        text: root.google-message;
+                        font-size: 9px;
+                        color: rgba(255,255,255,0.38);
+                        horizontal-alignment: center;
+                        overflow: elide;
+                        max-width: 280px;
+                        height: 10px;
+                    }
+                }
+
+                if root.google-connected: VerticalLayout {
+                    width: 100%;
+                    height: 100%;
+                    padding-left: 10px;
+                    padding-right: 10px;
+                    padding-top: 10px;
+                    padding-bottom: 10px;
+                    
+                    if root.filtered-calendar-events.length == 0: VerticalLayout {
+                        width: 100%;
+                        height: 100%;
+                        alignment: center;
+                        spacing: 2px;
+                        Text {
+                            text: "No events on this date";
+                            font-size: 13px;
+                            font-weight: 800;
+                            color: rgba(255, 255, 255, 0.62);
+                            horizontal-alignment: center;
+                        }
+                        Text {
+                            text: root.selected-day-label;
+                            font-size: 11px;
+                            font-weight: 700;
+                            color: rgba(255, 255, 255, 0.32);
+                            horizontal-alignment: center;
+                        }
+                    }
+
+                    if root.filtered-calendar-events.length > 0: ScrollView {
+                        height: 100%;
+                        viewport-height: root.filtered-calendar-events.length * 44px - 6px;
+                        
+                        VerticalLayout {
+                            spacing: 6px;
+                            alignment: start;
+                            
+                            for event in root.filtered-calendar-events: Rectangle {
+                                height: 38px;
+                                background: rgba(255, 255, 255, 0.03);
+                                border-radius: 8px;
+                                
+                                // Left accent line
+                                Rectangle {
+                                    x: 0;
+                                    width: 4px;
+                                    height: 100%;
+                                    background: #0066FF;
+                                    border-radius: 2px;
+                                }
+                                
+                                // Title + Time Layout
+                                VerticalLayout {
+                                    x: 12px;
+                                    width: parent.width - 20px;
+                                    alignment: center;
+                                    spacing: 2px;
+                                    
+                                    Text {
+                                        text: event.title;
+                                        font-size: 12px;
+                                        font-weight: 750;
+                                        color: white;
+                                        overflow: elide;
+                                    }
+                                    Text {
+                                        text: event.date_str;
+                                        font-size: 10px;
+                                        font-weight: 600;
+                                        color: rgba(255, 255, 255, 0.45);
+                                        overflow: elide;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if root.premium-locked: Rectangle {
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.38);
+            border-radius: 18px;
+
+            TouchArea {
+                width: 100%;
+                height: 100%;
+            }
+
+            Rectangle {
+                width: 248px;
+                height: 122px;
+                x: (parent.width - self.width) / 2;
+                y: (parent.height - self.height) / 2;
+                border-radius: 16px;
+                background: rgba(11, 12, 15, 0.92);
+                border-width: 1px;
+                border-color: rgba(34, 197, 94, 0.42);
+                drop-shadow-blur: 22px;
+                drop-shadow-color: rgba(0, 0, 0, 0.46);
+
+                VerticalLayout {
+                    padding-left: 18px;
+                    padding-right: 18px;
+                    padding-top: 15px;
+                    padding-bottom: 15px;
+                    spacing: 9px;
+                    alignment: center;
+
+                    Text {
+                        text: "Trial period over";
+                        font-size: 15px;
+                        font-weight: 950;
+                        color: white;
+                        horizontal-alignment: center;
+                    }
+
+                    Text {
+                        text: "Google Calendar is premium. Buy Raven Notch to unlock it.";
+                        font-size: 10px;
+                        font-weight: 700;
+                        color: rgba(255, 255, 255, 0.64);
+                        horizontal-alignment: center;
+                        wrap: word-wrap;
+                    }
+
+                    HorizontalLayout {
+                        height: 30px;
+                        alignment: center;
+
+                        Rectangle {
+                            width: 92px;
+                            height: 28px;
+                            border-radius: 14px;
+                            background: buy-calendar-touch.has-hover ? #35df72 : #22c55e;
+                            animate background { duration: 140ms; easing: ease-in-out; }
+
+                            Text {
+                                text: "Buy Now";
+                                font-size: 11px;
+                                font-weight: 900;
+                                color: #020403;
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+                            }
+
+                            buy-calendar-touch := TouchArea {
+                                width: 100%;
+                                height: 100%;
+                                mouse-cursor: pointer;
+                                clicked => { root.buy-license(); }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Mini Calendar Overlay View
+        if root.show-mini-calendar: Rectangle {
+            width: 100%;
+            height: 100%;
+            background: rgba(25, 25, 25, 0.98);
+            border-radius: 16px;
+            border-width: 1px;
+            border-color: rgba(255, 255, 255, 0.08);
+            clip: true;
+
+            VerticalLayout {
+                padding-left: 10px;
+                padding-right: 10px;
+                padding-top: 8px;
+                padding-bottom: 8px;
+                spacing: 6px;
+                width: 100%;
+                height: 100%;
+
+                // Header
+                HorizontalLayout {
+                    alignment: space-between;
+                    height: 24px;
+                    
+                    // Month/Year navigation display
+                    HorizontalLayout {
+                        spacing: 8px;
+                        alignment: start;
+                        
+                        // Month label selector trigger
+                        TouchArea {
+                            mouse-cursor: pointer;
+                            clicked => {
+                                root.picker-mode = root.picker-mode == "months" ? "days" : "months";
+                            }
+                            Text {
+                                text: root.mini-calendar-months[root.mini-calendar-view-month - 1];
+                                font-size: parent.has-hover ? 14px : 13px;
+                                font-weight: 900;
+                                color: root.picker-mode == "months" ? #0066FF : (parent.has-hover ? white : rgba(255, 255, 255, 0.8));
+                                vertical-alignment: center;
+                                animate font-size, color { duration: 120ms; }
+                            }
+                        }
+
+                        // Year label selector trigger
+                        TouchArea {
+                            mouse-cursor: pointer;
+                            clicked => {
+                                root.picker-mode = root.picker-mode == "years" ? "days" : "years";
+                            }
+                            Text {
+                                text: root.mini-calendar-view-year;
+                                font-size: parent.has-hover ? 14px : 13px;
+                                font-weight: 900;
+                                color: root.picker-mode == "years" ? #0066FF : (parent.has-hover ? white : rgba(255, 255, 255, 0.8));
+                                vertical-alignment: center;
+                                animate font-size, color { duration: 120ms; }
+                            }
+                        }
+                    }
+
+                    // Close/Back button
+                    TouchArea {
+                        width: 24px;
+                        height: 24px;
+                        mouse-cursor: pointer;
+                        clicked => {
+                            root.mini-calendar-close();
+                        }
+                        
+                        // Small premium close icon (X)
+                        Path {
+                            width: parent.has-hover ? 14px : 12px;
+                            height: parent.has-hover ? 14px : 12px;
+                            x: (parent.width - self.width) / 2;
+                            y: (parent.height - self.height) / 2;
+                            stroke: parent.has-hover ? white : rgba(255, 255, 255, 0.7);
+                            stroke-width: 2px;
+                            viewbox-width: 24;
+                            viewbox-height: 24;
+                            commands: "M 4 4 L 20 20 M 20 4 L 4 20";
+                            animate width, height, stroke { duration: 120ms; }
+                        }
+                    }
+                }
+
+                // Divider line
+                Rectangle {
+                    height: 1px;
+                    background: rgba(255, 255, 255, 0.08);
+                }
+
+                // Grid/Content Area depending on picker-mode
+                Rectangle {
+                    vertical-stretch: 1;
+                    width: 100%;
+
+                    // 1. DAYS PICKER GRID
+                    if root.picker-mode == "days": VerticalLayout {
+                        width: 100%;
+                        height: 100%;
+                        spacing: 2px;
+
+                        // Weekdays small header
+                        HorizontalLayout {
+                            height: 12px;
+                            spacing: 2px;
+                            for day-name in ["S", "M", "T", "W", "T", "F", "S"]: Text {
+                                text: day-name;
+                                font-size: 8px;
+                                font-weight: 800;
+                                color: rgba(255, 255, 255, 0.35);
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+                                width: 38px;
+                            }
+                        }
+
+                        // Day Cells (6 rows of 7 columns = 42 cells)
+                        for row-idx in [0, 1, 2, 3, 4, 5]: HorizontalLayout {
+                            spacing: 2px;
+                            height: 20px;
+                            for col-idx in [0, 1, 2, 3, 4, 5, 6]: TouchArea {
+                                property <int> cell-idx: row-idx * 7 + col-idx;
+                                enabled: root.mini-calendar-days.length > self.cell-idx && root.mini-calendar-days[self.cell-idx].day_num != "";
+                                clicked => {
+                                    root.mini-calendar-select-date(self.cell-idx, root.mini-calendar-view-month, root.mini-calendar-view-year);
+                                }
+
+                                Rectangle {
+                                    width: 38px;
+                                    height: 20px;
+                                    border-radius: 4px;
+                                    background: (root.mini-calendar-days.length > cell-idx && root.mini-calendar-days[cell-idx].is_selected) ? #0066FF : transparent;
+                                    
+                                    // Subtle hover state
+                                    states [
+                                        hover when parent.has-hover && root.mini-calendar-days.length > cell-idx && root.mini-calendar-days[cell-idx].day_num != "": {
+                                            background: rgba(255, 255, 255, 0.08);
+                                        }
+                                    ]
+
+                                    if root.mini-calendar-days.length > cell-idx: Text {
+                                        text: root.mini-calendar-days[cell-idx].day_num;
+                                        font-size: 10px;
+                                        font-weight: root.mini-calendar-days[cell-idx].is_today ? 900 : 600;
+                                        color: root.mini-calendar-days[cell-idx].is_selected ? white : (root.mini-calendar-days[cell-idx].is_today ? #0066FF : (root.mini-calendar-days[cell-idx].is_current_month ? white : rgba(255, 255, 255, 0.25)));
+                                        horizontal-alignment: center;
+                                        vertical-alignment: center;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // 2. MONTHS PICKER GRID (12 Months, Jan-Dec)
+                    if root.picker-mode == "months": VerticalLayout {
+                        width: 100%;
+                        height: 100%;
+                        spacing: 4px;
+                        padding-top: 4px;
+
+                        for r in [0, 1, 2, 3]: HorizontalLayout {
+                            spacing: 4px;
+                            height: 26px;
+                            for c in [0, 1, 2]: TouchArea {
+                                property <int> m-idx: r * 3 + c + 1;
+                                clicked => {
+                                    root.mini-calendar-view-month = self.m-idx;
+                                    root.mini-calendar-change-month-year(self.m-idx, root.mini-calendar-view-year);
+                                    root.picker-mode = "days";
+                                }
+
+                                Rectangle {
+                                    width: 88px;
+                                    height: 26px;
+                                    border-radius: 6px;
+                                    background: root.mini-calendar-view-month == (r * 3 + c + 1) ? #0066FF : rgba(255, 255, 255, 0.03);
+
+                                    states [
+                                        hover when parent.has-hover: {
+                                            background: root.mini-calendar-view-month == (r * 3 + c + 1) ? #0066FF : rgba(255, 255, 255, 0.08);
+                                        }
+                                    ]
+
+                                    Text {
+                                        text: root.mini-calendar-months[r * 3 + c];
+                                        font-size: 11px;
+                                        font-weight: 800;
+                                        color: white;
+                                        horizontal-alignment: center;
+                                        vertical-alignment: center;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // 3. YEARS PICKER GRID (12 Years, 2024 to 2029 or scrollable years)
+                    if root.picker-mode == "years": ScrollView {
+                        width: 100%;
+                        height: 100%;
+                        viewport-height: root.mini-calendar-years.length * 30px;
+
+                        VerticalLayout {
+                            spacing: 4px;
+                            alignment: start;
+                            
+                            for yr[y-idx] in root.mini-calendar-years: TouchArea {
+                                clicked => {
+                                    root.mini-calendar-view-year = yr;
+                                    root.mini-calendar-change-month-year(root.mini-calendar-view-month, yr);
+                                    root.picker-mode = "days";
+                                }
+
+                                Rectangle {
+                                    height: 26px;
+                                    border-radius: 6px;
+                                    background: root.mini-calendar-view-year == yr ? #0066FF : rgba(255, 255, 255, 0.03);
+
+                                    states [
+                                        hover when parent.has-hover: {
+                                            background: root.mini-calendar-view-year == yr ? #0066FF : rgba(255, 255, 255, 0.08);
+                                        }
+                                    ]
+
+                                    Text {
+                                        text: yr;
+                                        font-size: 12px;
+                                        font-weight: 800;
+                                        color: white;
+                                        horizontal-alignment: center;
+                                        vertical-alignment: center;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

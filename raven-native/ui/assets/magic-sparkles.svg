@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <!-- Large star on top-right -->
+  <path d="M 350 50 Q 350 200 500 200 Q 350 200 350 350 Q 350 200 200 200 Q 350 200 350 50 Z" fill="currentColor" />
+  <!-- Small star on bottom-left -->
+  <path d="M 160 250 Q 160 350 260 350 Q 160 350 160 450 Q 160 350 60 350 Q 160 350 160 250 Z" fill="currentColor" />
+</svg>

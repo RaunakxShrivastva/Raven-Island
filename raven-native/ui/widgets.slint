@@ -1,0 +1,3644 @@
+// Desktop Widget Engine Components
+// Glassmorphic, highly customized, and hardware-accelerated widgets
+
+import { ScrollView, TextEdit } from "std-widgets.slint";
+import { SlintAppShortcut, SlintFocusScoreRow, SlintStreakDay } from "types.slint";
+
+export component ClipboardDragPreviewWindow inherits Window {
+    no-frame: true;
+    background: transparent;
+    always-on-top: true;
+    width: 168px;
+    height: 46px;
+    title: "Raven Clipboard Drag Preview";
+
+    in-out property <string> drag-title: "Clipboard Item";
+
+    Rectangle {
+        width: 154px;
+        height: 42px;
+        x: 4px;
+        y: 0px;
+        border-radius: 10px;
+        background: rgba(18, 18, 18, 0.94);
+        border-width: 1px;
+        border-color: rgba(255, 255, 255, 0.16);
+        drop-shadow-blur: 18px;
+        drop-shadow-color: rgba(0, 0, 0, 0.48);
+        drop-shadow-offset-y: 5px;
+
+        Rectangle {
+            x: 8px;
+            y: 8px;
+            width: 26px;
+            height: 26px;
+            border-radius: 6px;
+            background: rgba(246, 185, 76, 0.17);
+            border-width: 1px;
+            border-color: rgba(246, 185, 76, 0.42);
+
+            Path {
+                x: 6px;
+                y: 5px;
+                width: 14px;
+                height: 16px;
+                viewbox-width: 24;
+                viewbox-height: 24;
+                stroke: #f6b94c;
+                stroke-width: 2.2px;
+                fill: transparent;
+                commands: "M6 2 H14 L20 8 V22 H6 Z M14 2 V8 H20";
+            }
+        }
+
+        Rectangle {
+            x: 25px;
+            y: 22px;
+            width: 15px;
+            height: 15px;
+            border-radius: 8px;
+            background: #32d74b;
+            border-width: 1px;
+            border-color: rgba(255, 255, 255, 0.55);
+
+            Path {
+                x: 3px;
+                y: 3px;
+                width: 9px;
+                height: 9px;
+                viewbox-width: 24;
+                viewbox-height: 24;
+                stroke: white;
+                stroke-width: 3px;
+                fill: transparent;
+                commands: "M12 5 V19 M5 12 H19";
+            }
+        }
+
+        Text {
+            x: 46px;
+            y: 7px;
+            width: 98px;
+            height: 16px;
+            text: root.drag-title;
+            color: white;
+            font-size: 11px;
+            font-weight: 900;
+            overflow: elide;
+            vertical-alignment: center;
+        }
+
+        Text {
+            x: 46px;
+            y: 23px;
+            width: 98px;
+            height: 12px;
+            text: "Drop to paste";
+            color: rgba(255, 255, 255, 0.58);
+            font-size: 9px;
+            font-weight: 750;
+            overflow: elide;
+            vertical-alignment: center;
+        }
+    }
+}
+
+export component SpiderThreadOverlayWindow inherits Window {
+    no-frame: true;
+    background: transparent;
+    always-on-top: true;
+    width: 180px;
+    // Keep the OS window size stable while dragging. Resizing this every frame
+    // makes Windows/Slint visibly refresh the thread.
+    height: 2400px;
+    title: "Raven Spider Thread Overlay";
+
+    in-out property <length> thread-height: 120px;
+    in-out property <int> timer-minutes: 25;
+
+    Rectangle {
+        x: 89px;
+        y: 0px;
+        width: 2px;
+        height: root.thread-height;
+        border-radius: 1px;
+        background: @linear-gradient(180deg, rgba(255,255,255,0.96) 0%, rgba(255,255,255,0.58) 100%);
+    }
+
+    Image {
+        source: @image-url("assets/spiderman-web.svg");
+        x: 72px;
+        y: root.thread-height - 2px;
+        width: 36px;
+        height: 36px;
+        colorize: white;
+    }
+
+    Rectangle {
+        x: 20px;
+        y: root.thread-height + 44px;
+        width: 140px;
+        height: 16px;
+        border-radius: 8px;
+        background: rgba(18, 18, 18, 0.82);
+        border-width: 1px;
+        border-color: rgba(255,255,255,0.16);
+
+        Text {
+            width: 100%;
+            height: 100%;
+            text: root.timer-minutes + " min";
+            color: white;
+            font-size: 10px;
+            font-weight: 900;
+            horizontal-alignment: center;
+            vertical-alignment: center;
+        }
+    }
+}
+
+export component StatsWidgetWindow inherits Window {
+    no-frame: true;
+    background: transparent;
+    always-on-top: false;
+    width: root.widget-size == "S" ? 180px : (root.widget-size == "M" ? 240px : (root.widget-size == "L" ? 320px : 400px));
+    height: root.widget-size == "S" ? 104px : (root.widget-size == "M" ? 138px : (root.widget-size == "L" ? 184px : 230px));
+    in-out property <string> instance-title: "Raven Clock Widget 0";
+    title: root.instance-title;
+
+    in-out property <string> time-str: "12:07";
+    in-out property <string> ampm-str: "pm";
+    in-out property <string> date-str: "Wednesday, 20 May";
+    in-out property <bool> is-locked: true;
+    in-out property <float> bg-opacity: 0.96;
+    in-out property <int> border-radius-val: 26;
+    in-out property <color> text-color: #ffffff;
+    in-out property <bool> show-seconds: false;
+    in-out property <string> widget-size: "M";
+
+    callback drag_window();
+    callback show_context_menu();
+    callback dummy_tracker();
+
+    Rectangle {
+        width: 100%;
+        height: 100%;
+        border-radius: root.border-radius-val * 1px;
+        background: @linear-gradient(145deg, rgba(22, 22, 26, root.bg-opacity * 0.82) 0%, rgba(5, 5, 8, root.bg-opacity * 0.88) 100%);
+        border-width: 1px;
+        border-color: rgba(255, 255, 255, 0.13);
+
+        // Glass reflection radial highlight representation
+        Rectangle {
+            width: 100%;
+            height: 100%;
+            border-radius: parent.border-radius;
+            background: @linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.0) 35%);
+        }
+
+        TouchArea {
+            width: 100%;
+            height: 100%;
+            pointer-event(evt) => {
+                if evt.button == PointerEventButton.left && evt.kind == PointerEventKind.down {
+                    if !root.is-locked {
+                        root.drag_window();
+                    }
+                } else if evt.button == PointerEventButton.right && evt.kind == PointerEventKind.down {
+                    root.show_context_menu();
+                }
+            }
+        }
+
+        VerticalLayout {
+            padding-left: root.widget-size == "S" ? 12px : (root.widget-size == "M" ? 16px : (root.widget-size == "L" ? 22px : 26px));
+            padding-right: root.widget-size == "S" ? 12px : (root.widget-size == "M" ? 16px : (root.widget-size == "L" ? 22px : 26px));
+            padding-top: 0px;
+            padding-bottom: root.widget-size == "S" ? 12px : (root.widget-size == "M" ? 16px : (root.widget-size == "L" ? 22px : 26px));
+            spacing: 0px;
+
+            // Header Row (CLOCK  -  LOCKED/DRAG)
+            HorizontalLayout {
+                height: root.widget-size == "S" ? 28px : (root.widget-size == "M" ? 38px : (root.widget-size == "L" ? 50px : 60px));
+                alignment: space-between;
+                Text {
+                    text: "CLOCK";
+                    font-size: root.widget-size == "S" ? 8px : (root.widget-size == "M" ? 11px : (root.widget-size == "L" ? 15px : 18px));
+                    font-weight: 950;
+                    color: rgba(255, 255, 255, 0.74);
+                    letter-spacing: 0.3px;
+                    vertical-alignment: center;
+                }
+                Text {
+                    text: root.is-locked ? "LOCKED" : "DRAG";
+                    font-size: root.widget-size == "S" ? 7px : (root.widget-size == "M" ? 10px : (root.widget-size == "L" ? 13px : 16px));
+                    font-weight: 950;
+                    color: rgba(255, 255, 255, 0.28);
+                    vertical-alignment: center;
+                }
+            }
+
+            // Body Area
+            VerticalLayout {
+                spacing: 2px;
+                padding-top: 2px;
+                
+                HorizontalLayout {
+                    alignment: start;
+                    spacing: 4px;
+
+                    Text {
+                        text: root.time-str;
+                        font-size: root.widget-size == "S" ? 34px : (root.widget-size == "M" ? 46px : (root.widget-size == "L" ? 62px : 76px));
+                        font-weight: 760;
+                        color: root.text-color;
+                        vertical-alignment: bottom;
+                    }
+
+                    if root.ampm-str != "": Text {
+                        text: root.ampm-str;
+                        font-size: root.widget-size == "S" ? 18px : (root.widget-size == "M" ? 24px : (root.widget-size == "L" ? 32px : 40px));
+                        font-weight: 760;
+                        color: root.text-color;
+                        vertical-alignment: bottom;
+                        y: -3px;
+                    }
+                }
+
+                Text {
+                    text: root.date-str;
+                    font-size: root.widget-size == "S" ? 10px : (root.widget-size == "M" ? 13px : (root.widget-size == "L" ? 18px : 22px));
+                    font-weight: 750;
+                    color: rgba(255, 255, 255, 0.55);
+                }
+            }
+        }
+    }
+
+}
+
+export component BatteryPercentageWidgetWindow inherits Window {
+    no-frame: true;
+    background: transparent;
+    always-on-top: false;
+    width: 190px;
+    height: 190px;
+    in-out property <string> instance-title: "Raven Battery Percentage Widget";
+    title: root.instance-title;
+
+    in-out property <float> battery-pct: 100.0;
+    in-out property <bool> is-charging: false;
+    in-out property <bool> is-locked: true;
+    in-out property <float> bg-opacity: 0.96;
+    in-out property <int> border-radius-val: 24;
+    in-out property <image> progress-ring-img;
+    property <color> battery-color: root.battery-pct <= 20.0 ? #FF3B30 : (root.battery-pct < 50.0 ? #FFD700 : #34C759);
+
+    callback drag_window();
+    callback show_context_menu();
+    callback dummy_tracker();
+
+    Rectangle {
+        width: 100%;
+        height: 100%;
+        border-radius: root.border-radius-val * 1px;
+        background: @linear-gradient(145deg, rgba(22, 22, 26, root.bg-opacity * 0.84) 0%, rgba(5, 5, 8, root.bg-opacity * 0.9) 100%);
+        border-width: 1px;
+        border-color: rgba(255, 255, 255, 0.13);
+        clip: true;
+
+        Rectangle {
+            width: 100%;
+            height: 100%;
+            border-radius: parent.border-radius;
+            background: @linear-gradient(135deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.0) 36%);
+        }
+
+        TouchArea {
+            width: 100%;
+            height: 100%;
+            pointer-event(evt) => {
+                if evt.button == PointerEventButton.left && evt.kind == PointerEventKind.down {
+                    if !root.is-locked {
+                        root.drag_window();
+                    }
+                } else if evt.button == PointerEventButton.right && evt.kind == PointerEventKind.down {
+                    root.show_context_menu();
+                }
+            }
+        }
+
+        Image {
+            x: 17px;
+            y: 13px;
+            width: 84px;
+            height: 84px;
+            source: root.progress-ring-img;
+            image-fit: contain;
+        }
+
+        Rectangle { x: 43px; y: 45px; width: 32px; height: 22px; border-width: 2px; border-radius: 3px; border-color: rgba(255,255,255,0.74); background: transparent; }
+        Rectangle { x: 47px; y: 49px; width: 24px; height: 14px; border-radius: 1px; background: rgba(150,150,150,0.55); }
+        Rectangle { x: 39px; y: 69px; width: 40px; height: 3px; border-radius: 1.5px; background: rgba(255,255,255,0.74); }
+
+        if root.is-charging : Path {
+            width: 30px;
+            height: 36px;
+            x: 126px;
+            y: 42px;
+            fill: root.battery-color;
+            commands: "M17 0 L5 18 H14 L10 36 L27 13 H17 Z";
+        }
+
+        if root.is-charging : Text {
+            text: "charging";
+            x: 106px;
+            y: 78px;
+            width: 74px;
+            color: white;
+            font-size: 15px;
+            font-weight: 650;
+            horizontal-alignment: center;
+        }
+
+        Text {
+            text: round(root.battery-pct) + "%";
+            x: 18px;
+            y: 112px;
+            width: 154px;
+            color: white;
+            font-size: 52px;
+            font-weight: 650;
+            horizontal-alignment: center;
+        }
+    }
+}
+
+export component CalendarFocusWidgetWindow inherits Window {
+    no-frame: true;
+    background: transparent;
+    always-on-top: false;
+    width: 356px;
+    height: 168px;
+    in-out property <string> instance-title: "Raven Calendar Focus Widget";
+    title: root.instance-title;
+
+    in-out property <string> weekday-str: "Tue";
+    in-out property <string> month-str: "Sep";
+    in-out property <string> day-str: "12";
+    in-out property <string> timer-str: "25:00";
+    in-out property <bool> timer-running: false;
+    in-out property <bool> is-locked: true;
+    in-out property <float> bg-opacity: 0.96;
+    in-out property <int> border-radius-val: 24;
+    in-out property <image> progress-ring-img;
+
+    callback drag_window();
+    callback show_context_menu();
+    callback configure_timer();
+    callback toggle_timer();
+    callback dummy_tracker();
+
+    Rectangle {
+        width: 100%;
+        height: 100%;
+        border-radius: root.border-radius-val * 1px;
+        background: @linear-gradient(145deg, rgba(20, 20, 23, root.bg-opacity * 0.88) 0%, rgba(3, 3, 5, root.bg-opacity * 0.94) 100%);
+        border-width: 1px;
+        border-color: rgba(255, 255, 255, 0.16);
+        clip: true;
+
+        Rectangle {
+            width: 100%;
+            height: 100%;
+            border-radius: parent.border-radius;
+            background: @linear-gradient(135deg, rgba(255, 255, 255, 0.13) 0%, rgba(255, 255, 255, 0.0) 38%);
+        }
+
+        TouchArea {
+            width: 100%;
+            height: 100%;
+            pointer-event(evt) => {
+                if evt.button == PointerEventButton.left && evt.kind == PointerEventKind.down {
+                    if !root.is-locked {
+                        root.drag_window();
+                    }
+                } else if evt.button == PointerEventButton.right && evt.kind == PointerEventKind.down {
+                    root.show_context_menu();
+                }
+            }
+        }
+
+        HorizontalLayout {
+            x: 20px;
+            y: 18px;
+            width: 154px;
+            height: 35px;
+            alignment: center;
+            spacing: 8px;
+
+            Text {
+                text: root.weekday-str;
+                color: #FF453A;
+                font-size: 27px;
+                font-weight: 800;
+                vertical-alignment: center;
+            }
+            Text {
+                text: root.month-str;
+                color: rgba(255, 255, 255, 0.52);
+                font-size: 27px;
+                font-weight: 700;
+                vertical-alignment: center;
+            }
+        }
+
+        Text {
+            text: root.day-str;
+            x: 20px;
+            y: 50px;
+            width: 154px;
+            color: white;
+            font-size: 78px;
+            font-weight: 720;
+            horizontal-alignment: center;
+        }
+
+        timer-touch := TouchArea {
+            x: 184px;
+            y: 13px;
+            width: 154px;
+            height: 142px;
+            double-clicked => { root.configure_timer(); }
+        }
+
+        Image {
+            x: 190px;
+            y: 8px;
+            width: 148px;
+            height: 148px;
+            source: root.progress-ring-img;
+            image-fit: contain;
+        }
+
+        Text {
+            text: root.timer-str;
+            x: 207px;
+            y: 57px;
+            width: 114px;
+            color: white;
+            font-size: 28px;
+            font-weight: 760;
+            horizontal-alignment: center;
+        }
+
+        Rectangle {
+            x: 239px;
+            y: 103px;
+            width: 50px;
+            height: 22px;
+            border-radius: 5px;
+            background: root.timer-running ? rgba(10, 132, 255, 0.34) : rgba(10, 132, 255, 0.18);
+
+            Text {
+                text: root.timer-running ? "PAUSE" : "FOCUS";
+                color: #3DA5FF;
+                font-size: 10px;
+                font-weight: 850;
+                horizontal-alignment: center;
+                vertical-alignment: center;
+            }
+
+            TouchArea {
+                clicked => { root.toggle_timer(); }
+            }
+        }
+    }
+}
+
+export component SystemStatsWidgetWindow inherits Window {
+    no-frame: true;
+    background: transparent;
+    always-on-top: false;
+    width: 300px;
+    height: 138px;
+    in-out property <string> instance-title: "Raven System Stats Widget";
+    title: root.instance-title;
+
+    in-out property <float> cpu-pct: 23.0;
+    in-out property <float> ram-pct: 45.0;
+    in-out property <float> disk-pct: 38.0;
+    in-out property <image> cpu-ring-img;
+    in-out property <image> ram-ring-img;
+    in-out property <image> disk-ring-img;
+    in-out property <bool> is-locked: true;
+    in-out property <float> bg-opacity: 0.96;
+    in-out property <int> border-radius-val: 22;
+
+    callback drag_window();
+    callback show_context_menu();
+    callback dummy_tracker();
+
+    Rectangle {
+        width: 100%;
+        height: 100%;
+        border-radius: root.border-radius-val * 1px;
+        background: @linear-gradient(145deg, rgba(22, 22, 26, root.bg-opacity * 0.86) 0%, rgba(7, 7, 10, root.bg-opacity * 0.92) 100%);
+        border-width: 1px;
+        border-color: rgba(255, 255, 255, 0.12);
+        clip: true;
+
+        Rectangle {
+            width: 100%;
+            height: 100%;
+            border-radius: parent.border-radius;
+            background: @linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.0) 42%);
+        }
+
+        TouchArea {
+            width: 100%;
+            height: 100%;
+            pointer-event(evt) => {
+                if evt.button == PointerEventButton.left && evt.kind == PointerEventKind.down {
+                    if !root.is-locked { root.drag_window(); }
+                } else if evt.button == PointerEventButton.right && evt.kind == PointerEventKind.down {
+                    root.show_context_menu();
+                }
+            }
+        }
+
+        Text {
+            text: "System";
+            x: 18px;
+            y: 14px;
+            color: rgba(255,255,255,0.86);
+            font-size: 15px;
+            font-weight: 760;
+        }
+
+        Path {
+            width: 8px;
+            height: 14px;
+            x: parent.width - 28px;
+            y: 15px;
+            stroke: rgba(255,255,255,0.45);
+            stroke-width: 2px;
+            fill: transparent;
+            MoveTo { x: 2; y: 1; }
+            LineTo { x: 7; y: 7; }
+            LineTo { x: 2; y: 13; }
+        }
+
+        HorizontalLayout {
+            x: 14px;
+            y: 48px;
+            width: parent.width - 28px;
+            height: 76px;
+            spacing: 16px;
+
+            for metric[idx] in [
+                { label: "CPU", value: root.cpu-pct, img: root.cpu-ring-img, color: #2F8CFF },
+                { label: "RAM", value: root.ram-pct, img: root.ram-ring-img, color: #8B5CFF },
+                { label: "Disk", value: root.disk-pct, img: root.disk-ring-img, color: #58D957 },
+            ]: Rectangle {
+                width: 76px;
+                height: 76px;
+                background: transparent;
+
+                Image {
+                    x: 0px;
+                    y: 0px;
+                    width: 76px;
+                    height: 76px;
+                    source: metric.img;
+                    image-fit: contain;
+                }
+
+                VerticalLayout {
+                    x: 10px;
+                    y: 20px;
+                    width: 56px;
+                    height: 38px;
+                    spacing: 0px;
+                    Text {
+                        text: metric.label;
+                        color: metric.color;
+                        font-size: 10px;
+                        font-weight: 850;
+                        horizontal-alignment: center;
+                    }
+                    Text {
+                        text: round(metric.value) + "%";
+                        color: white;
+                        font-size: 16px;
+                        font-weight: 760;
+                        horizontal-alignment: center;
+                    }
+                }
+            }
+        }
+    }
+}
+
+export component FocusCompletionOverlayWindow inherits Window {
+    no-frame: true;
+    background: transparent;
+    always-on-top: true;
+
+    in-out property <string> goal-text: "Focus session";
+    in-out property <bool> is-glowing: false;
+    in-out property <length> overlay-width: 0px;
+    in-out property <length> overlay-height: 0px;
+    callback dismiss();
+
+    width: root.overlay-width;
+    height: root.overlay-height;
+
+    Rectangle {
+        width: 100%;
+        height: 100%;
+        background: black;
+        clip: false;
+
+        Rectangle {
+            x: 0px;
+            y: 0px;
+            width: 100%;
+            height: 120px;
+            background: @linear-gradient(180deg, rgba(34, 197, 94, root.is-glowing ? 0.35 : 0.08) 0%, rgba(34, 197, 94, 0) 100%);
+            animate background { duration: 1200ms; easing: ease-in-out; }
+        }
+        Rectangle {
+            x: 0px;
+            y: parent.height - 120px;
+            width: 100%;
+            height: 120px;
+            background: @linear-gradient(0deg, rgba(34, 197, 94, root.is-glowing ? 0.35 : 0.08) 0%, rgba(34, 197, 94, 0) 100%);
+            animate background { duration: 1200ms; easing: ease-in-out; }
+        }
+        Rectangle {
+            x: 0px;
+            y: 0px;
+            width: 120px;
+            height: 100%;
+            background: @linear-gradient(90deg, rgba(34, 197, 94, root.is-glowing ? 0.35 : 0.08) 0%, rgba(34, 197, 94, 0) 100%);
+            animate background { duration: 1200ms; easing: ease-in-out; }
+        }
+        Rectangle {
+            x: parent.width - 120px;
+            y: 0px;
+            width: 120px;
+            height: 100%;
+            background: @linear-gradient(270deg, rgba(34, 197, 94, root.is-glowing ? 0.35 : 0.08) 0%, rgba(34, 197, 94, 0) 100%);
+            animate background { duration: 1200ms; easing: ease-in-out; }
+        }
+    }
+
+    Rectangle {
+        x: (parent.width - 320px) / 2;
+        y: 26px;
+        width: 320px;
+        height: 56px;
+        border-radius: 16px;
+        background: @linear-gradient(135deg, rgba(10, 28, 20, 0.96) 0%, rgba(5, 14, 10, 0.99) 100%);
+        border-width: 1.5px;
+        border-color: #22c55e;
+
+        HorizontalLayout {
+            padding-left: 14px;
+            padding-right: 12px;
+            spacing: 12px;
+
+            VerticalLayout {
+                alignment: center;
+                Rectangle {
+                    width: 24px;
+                    height: 24px;
+                    border-radius: 12px;
+                    background: rgba(34, 197, 94, 0.2);
+                    border-width: 1px;
+                    border-color: rgba(34, 197, 94, 0.4);
+
+                    Path {
+                        width: 10px;
+                        height: 10px;
+                        stroke: #22c55e;
+                        stroke-width: 2px;
+                        commands: "M 2 5 L 4.5 7.5 L 8 2.5";
+                        x: 7px;
+                        y: 7px;
+                    }
+                }
+            }
+
+            VerticalLayout {
+                alignment: center;
+                spacing: 2px;
+
+                Text {
+                    text: root.goal-text + " completed";
+                    font-size: 12px;
+                    font-weight: 760;
+                    color: white;
+                    overflow: elide;
+                }
+
+                Text {
+                    text: "You stayed focused.";
+                    font-size: 9px;
+                    font-weight: 600;
+                    color: rgba(255, 255, 255, 0.62);
+                }
+            }
+
+            Rectangle {}
+
+            VerticalLayout {
+                alignment: center;
+                TouchArea {
+                    width: 24px;
+                    height: 24px;
+                    clicked => { root.dismiss(); }
+
+                    Rectangle {
+                        width: 100%;
+                        height: 100%;
+                        border-radius: 12px;
+                        background: parent.has-hover ? rgba(255, 255, 255, 0.14) : transparent;
+
+                        Path {
+                            width: 8px;
+                            height: 8px;
+                            stroke: rgba(255, 255, 255, 0.72);
+                            stroke-width: 1.5px;
+                            commands: "M 0 0 L 8 8 M 8 0 L 0 8";
+                            x: 8px;
+                            y: 8px;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+}
+
+export component FocusStatusBarWindow inherits Window {
+    no-frame: true;
+    background: transparent;
+    always-on-top: true;
+
+    // Properties
+    in-out property <string> goal-text: "Coding Session";
+    in-out property <string> timer-str: "25:00";
+    in-out property <float> timer-progress: 0.0;
+    in-out property <bool> is-paused: false;
+    in-out property <float> scale-val: 1.0;
+    in-out property <bool> dropped-down: false;
+    in-out property <bool> is-hovered-rust: false;
+    property <bool> is-hovered: root.is-hovered-rust;
+    in-out property <bool> is-completed: false;
+    in-out property <bool> is-glowing: false;
+    in-out property <length> fullscreen-width: 0px;
+    in-out property <length> fullscreen-height: 0px;
+
+    // Callbacks
+    callback drag_move_start();
+    callback pause_toggle();
+    callback complete_session();
+    callback drag_scale_start(bool); // true = left, false = right
+    callback dismiss();
+
+    width: 420px * root.scale-val;
+    height: 84px * root.scale-val;
+
+    // Glowing border outline, shown when hovered or completed
+    Rectangle {
+        property <length> target-w: (root.is-completed ? 300px : (root.is-hovered ? 340px : 220px)) * root.scale-val;
+        property <length> target-h: (root.is-completed ? 48px : 42px) * root.scale-val;
+
+        x: ((parent.width - target-w) / 2) - 3px;
+        y: (root.dropped-down ? (5px * root.scale-val) : (-70px * root.scale-val)) - 3px;
+        width: target-w + 6px;
+        height: target-h + 6px;
+        border-radius: (root.is-completed ? 16px : 14px) * root.scale-val;
+        border-width: (root.is-hovered || root.is-completed) ? 1.5px : 0px;
+        border-color: rgba(34, 197, 94, 0.85); // sleek glowing green color
+        background: transparent;
+        clip: false;
+        
+        animate y {
+            duration: 350ms;
+            easing: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        animate width {
+            duration: 200ms;
+            easing: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        animate height {
+            duration: 200ms;
+            easing: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        animate x {
+            duration: 200ms;
+            easing: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+    }
+
+    // Main glassy container centered in window
+    Rectangle {
+        property <length> target-w: (root.is-completed ? 300px : (root.is-hovered ? 340px : 220px)) * root.scale-val;
+        property <length> target-h: (root.is-completed ? 48px : 42px) * root.scale-val;
+
+        x: (parent.width - target-w) / 2;
+        y: root.dropped-down ? (5px * root.scale-val) : (-70px * root.scale-val);
+        width: target-w;
+        height: target-h;
+        border-radius: (root.is-completed ? 14px : 12px) * root.scale-val;
+        background: @linear-gradient(135deg, rgba(10, 28, 20, 0.96) 0%, rgba(5, 14, 10, 0.99) 100%);
+        border-width: 1.5px;
+        border-color: rgba(255, 255, 255, 0.15);
+        clip: true;
+        
+        animate y {
+            duration: 350ms;
+            easing: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        animate width {
+            duration: 200ms;
+            easing: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        animate height {
+            duration: 200ms;
+            easing: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        // Background drag area. In hover mode this sits behind the buttons,
+        // so empty regions drag the bar while controls keep normal clicks.
+        TouchArea {
+            width: 100%;
+            height: 100%;
+            mouse-cursor: MouseCursor.move;
+            pointer-event(evt) => {
+                if evt.button == PointerEventButton.left && evt.kind == PointerEventKind.down {
+                    root.drag_move_start();
+                }
+            }
+        }
+
+        // Progress bar background fill (sleek green overlay, only shown when active)
+        if !root.is-completed : Rectangle {
+            x: 0px;
+            width: parent.width * Math.clamp(root.timer-progress, 0.0, 1.0);
+            height: 100%;
+            background: rgba(34, 197, 94, 0.12);
+            
+            animate width {
+                duration: 200ms;
+                easing: ease-out;
+            }
+        }
+
+        // Layout when NOT completed
+        if !root.is-completed : VerticalLayout {
+            alignment: center;
+            height: 100%;
+
+            HorizontalLayout {
+                padding-left: 8px * root.scale-val;
+                padding-right: 8px * root.scale-val;
+                spacing: 8px * root.scale-val;
+                height: 24px * root.scale-val;
+
+                // Timer display on left (in a capsule)
+                Rectangle {
+                    width: 60px * root.scale-val;
+                    height: 24px * root.scale-val;
+                    border-radius: 6px * root.scale-val;
+                    background: rgba(255, 255, 255, 0.08);
+                    border-width: 1px;
+                    border-color: rgba(255, 255, 255, 0.1);
+                    
+                    Text {
+                        text: root.timer-str;
+                        font-size: 13px * root.scale-val;
+                        font-weight: 800;
+                        color: root.is-paused ? #ff9500 : white;
+                        horizontal-alignment: center;
+                        vertical-alignment: center;
+                        font-family: "Consolas";
+                    }
+                }
+
+                // If not hovered: Display Goal Text
+                if !root.is-hovered : Text {
+                    text: root.goal-text;
+                    font-size: 13px * root.scale-val;
+                    font-weight: 700;
+                    color: rgba(255, 255, 255, 0.9);
+                    vertical-alignment: center;
+                    overflow: elide;
+                }
+
+                // Spacer to push controls to the right when hovered
+                if root.is-hovered : Rectangle {}
+
+                // If hovered: Display controls
+                if root.is-hovered : HorizontalLayout {
+                    spacing: 6px * root.scale-val;
+
+                    // Hide Button
+                    TouchArea {
+                        width: 50px * root.scale-val;
+                        height: 24px * root.scale-val;
+                        clicked => { root.dismiss(); }
+                        Rectangle {
+                            width: 100%;
+                            height: 100%;
+                            border-radius: 6px * root.scale-val;
+                            background: parent.has-hover ? rgba(255, 255, 255, 0.15) : rgba(255, 255, 255, 0.08);
+                            border-width: 1px;
+                            border-color: rgba(255, 255, 255, 0.15);
+                            
+                            animate background { duration: 150ms; }
+                            
+                            Text {
+                                text: "Hide";
+                                font-size: 9px * root.scale-val;
+                                font-weight: 700;
+                                color: white;
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+                            }
+                        }
+                    }
+
+                    // Pause/Resume Button
+                    TouchArea {
+                        width: 64px * root.scale-val;
+                        height: 24px * root.scale-val;
+                        clicked => { root.pause_toggle(); }
+                        Rectangle {
+                            width: 100%;
+                            height: 100%;
+                            border-radius: 6px * root.scale-val;
+                            background: parent.has-hover ? 
+                                (root.is-paused ? rgba(255, 149, 0, 0.3) : rgba(255, 255, 255, 0.15)) : 
+                                (root.is-paused ? rgba(255, 149, 0, 0.2) : rgba(255, 255, 255, 0.08));
+                            border-width: 1px;
+                            border-color: root.is-paused ? rgba(255, 149, 0, 0.4) : rgba(255, 255, 255, 0.15);
+                            
+                            animate background { duration: 150ms; }
+                            
+                            Text {
+                                text: root.is-paused ? "Resume" : "Pause";
+                                font-size: 9px * root.scale-val;
+                                font-weight: 700;
+                                color: white;
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+                            }
+                        }
+                    }
+
+                    // Complete Button
+                    TouchArea {
+                        width: 76px * root.scale-val;
+                        height: 24px * root.scale-val;
+                        clicked => { root.complete_session(); }
+                        Rectangle {
+                            width: 100%;
+                            height: 100%;
+                            border-radius: 6px * root.scale-val;
+                            background: parent.has-hover ? rgba(34, 197, 94, 0.35) : rgba(34, 197, 94, 0.2);
+                            border-width: 1px;
+                            border-color: rgba(34, 197, 94, 0.4);
+                            
+                            animate background { duration: 150ms; }
+                            
+                            Text {
+                                text: "Complete";
+                                font-size: 9px * root.scale-val;
+                                font-weight: 700;
+                                color: white;
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Layout when Completed (Goal Completed Notification Card)
+        if root.is-completed : HorizontalLayout {
+            padding-left: 14px * root.scale-val;
+            padding-right: 14px * root.scale-val;
+            spacing: 12px * root.scale-val;
+
+            // Green circle with checkmark icon on left
+            VerticalLayout {
+                alignment: center;
+                Rectangle {
+                    width: 24px * root.scale-val;
+                    height: 24px * root.scale-val;
+                    border-radius: 12px * root.scale-val;
+                    background: rgba(34, 197, 94, 0.2);
+                    border-width: 1px;
+                    border-color: rgba(34, 197, 94, 0.4);
+                    
+                    Path {
+                        width: 10px * root.scale-val;
+                        height: 10px * root.scale-val;
+                        stroke: #22c55e;
+                        stroke-width: 2px;
+                        commands: "M 2 5 L 4.5 7.5 L 8 2.5";
+                        x: 7px * root.scale-val;
+                        y: 7px * root.scale-val;
+                    }
+                }
+            }
+
+            // Message text layout in center (Title + Subtitle)
+            VerticalLayout {
+                alignment: center;
+                spacing: 2px * root.scale-val;
+
+                Text {
+                    text: root.goal-text + " completed";
+                    font-size: 11px * root.scale-val;
+                    font-weight: 700;
+                    color: white;
+                    overflow: elide;
+                }
+
+                Text {
+                    text: "You stayed focused.";
+                    font-size: 9px * root.scale-val;
+                    font-weight: 500;
+                    color: rgba(255, 255, 255, 0.6);
+                }
+            }
+
+            // Spacer to push the close button to the right
+            Rectangle { }
+
+            // Close button (X) on right
+            VerticalLayout {
+                alignment: center;
+                TouchArea {
+                    width: 16px * root.scale-val;
+                    height: 16px * root.scale-val;
+                    clicked => { root.dismiss(); }
+
+                    Rectangle {
+                        width: 100%;
+                        height: 100%;
+                        background: transparent;
+
+                        Path {
+                            width: 8px * root.scale-val;
+                            height: 8px * root.scale-val;
+                            stroke: rgba(255, 255, 255, 0.6);
+                            stroke-width: 1.5px;
+                            commands: "M 0 0 L 8 8 M 8 0 L 0 8";
+                            x: 4px * root.scale-val;
+                            y: 4px * root.scale-val;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Edge-only resize hit zones. They sit outside the content, so controls
+    // keep normal hover/click behavior while the border remains easy to grab.
+    if root.is-hovered && !root.is-completed : TouchArea {
+        property <length> target-w: 340px * root.scale-val;
+        property <length> target-h: 42px * root.scale-val;
+        x: ((parent.width - target-w) / 2) - 16px;
+        y: (root.dropped-down ? (5px * root.scale-val) : (-70px * root.scale-val)) - 10px;
+        width: 14px;
+        height: target-h + 20px;
+        mouse-cursor: MouseCursor.w-resize;
+        pointer-event(evt) => {
+            if evt.button == PointerEventButton.left && evt.kind == PointerEventKind.down {
+                root.drag_scale_start(true);
+            }
+        }
+    }
+
+    if root.is-hovered && !root.is-completed : TouchArea {
+        property <length> target-w: 340px * root.scale-val;
+        property <length> target-h: 42px * root.scale-val;
+        x: ((parent.width + target-w) / 2) + 2px;
+        y: (root.dropped-down ? (5px * root.scale-val) : (-70px * root.scale-val)) - 10px;
+        width: 14px;
+        height: target-h + 20px;
+        mouse-cursor: MouseCursor.e-resize;
+        pointer-event(evt) => {
+            if evt.button == PointerEventButton.left && evt.kind == PointerEventKind.down {
+                root.drag_scale_start(false);
+            }
+        }
+    }
+
+    if root.is-hovered && !root.is-completed : TouchArea {
+        property <length> target-w: 340px * root.scale-val;
+        x: ((parent.width - target-w) / 2) + 8px;
+        y: (root.dropped-down ? (5px * root.scale-val) : (-70px * root.scale-val)) - 14px;
+        width: (target-w - 16px) / 2;
+        height: 12px;
+        mouse-cursor: MouseCursor.w-resize;
+        pointer-event(evt) => {
+            if evt.button == PointerEventButton.left && evt.kind == PointerEventKind.down {
+                root.drag_scale_start(true);
+            }
+        }
+    }
+
+    if root.is-hovered && !root.is-completed : TouchArea {
+        property <length> target-w: 340px * root.scale-val;
+        x: (parent.width / 2);
+        y: (root.dropped-down ? (5px * root.scale-val) : (-70px * root.scale-val)) - 14px;
+        width: (target-w - 16px) / 2;
+        height: 12px;
+        mouse-cursor: MouseCursor.e-resize;
+        pointer-event(evt) => {
+            if evt.button == PointerEventButton.left && evt.kind == PointerEventKind.down {
+                root.drag_scale_start(false);
+            }
+        }
+    }
+
+    if root.is-hovered && !root.is-completed : TouchArea {
+        property <length> target-w: 340px * root.scale-val;
+        property <length> target-h: 42px * root.scale-val;
+        x: ((parent.width - target-w) / 2) + 8px;
+        y: (root.dropped-down ? (5px * root.scale-val) : (-70px * root.scale-val)) + target-h + 2px;
+        width: (target-w - 16px) / 2;
+        height: 12px;
+        mouse-cursor: MouseCursor.w-resize;
+        pointer-event(evt) => {
+            if evt.button == PointerEventButton.left && evt.kind == PointerEventKind.down {
+                root.drag_scale_start(true);
+            }
+        }
+    }
+
+    if root.is-hovered && !root.is-completed : TouchArea {
+        property <length> target-w: 340px * root.scale-val;
+        property <length> target-h: 42px * root.scale-val;
+        x: (parent.width / 2);
+        y: (root.dropped-down ? (5px * root.scale-val) : (-70px * root.scale-val)) + target-h + 2px;
+        width: (target-w - 16px) / 2;
+        height: 12px;
+        mouse-cursor: MouseCursor.e-resize;
+        pointer-event(evt) => {
+            if evt.button == PointerEventButton.left && evt.kind == PointerEventKind.down {
+                root.drag_scale_start(false);
+            }
+        }
+    }
+}
+
+
+
+export component GenericWidgetWindow inherits Window {
+    no-frame: true;
+    background: transparent;
+    always-on-top: false;
+    in-out property <int> copy-window-width: 320;
+    in-out property <int> copy-window-height: 150;
+    width: root.copy-window-width * 1px;
+    height: root.copy-window-height * 1px;
+    in-out property <string> window-id: "";
+    title: "Raven Generic Widget - " + root.window-id;
+
+    in-out property <string> widget-title: "Widget";
+    in-out property <string> widget-kind: "widget";
+    in-out property <string> copy-date-str: "";
+    in-out property <string> copy-pct-str: "43.5%";
+    in-out property <float> copy-pct-val: 0.435;
+    in-out property <string> copy-detail-str: "";
+    in-out property <bool> is-locked: true;
+    in-out property <float> bg-opacity: 0.96;
+    in-out property <int> border-radius-val: 22;
+    callback dummy_tracker();
+    callback drag_window();
+    callback show_context_menu();
+
+    Rectangle {
+        width: 100%;
+        height: 100%;
+        border-radius: root.border-radius-val * 1px;
+        background: @linear-gradient(145deg, rgba(22, 22, 26, root.bg-opacity * 0.84) 0%, rgba(5, 5, 8, root.bg-opacity * 0.9) 100%);
+        border-width: 1px;
+        border-color: rgba(255, 255, 255, 0.14);
+
+        Rectangle {
+            width: 100%;
+            height: 100%;
+            border-radius: parent.border-radius;
+            background: @linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.0) 36%);
+        }
+
+        TouchArea {
+            width: 100%;
+            height: 100%;
+            pointer-event(evt) => {
+                if evt.button == PointerEventButton.left && evt.kind == PointerEventKind.down {
+                    if !root.is-locked {
+                        root.drag_window();
+                    }
+                } else if evt.button == PointerEventButton.right && evt.kind == PointerEventKind.down {
+                    root.show_context_menu();
+                }
+            }
+        }
+
+        if root.widget-kind == "media": Rectangle {
+            width: 100%; height: 100%; background: transparent;
+            VerticalLayout {
+                padding: 20px; spacing: 12px;
+                HorizontalLayout {
+                    alignment: space-between;
+                    Text { text: "MEDIA PLAYER"; font-size: 10px; font-weight: 950; color: #B000FF; }
+                    Text { text: "LIVE"; font-size: 9px; font-weight: 950; color: rgba(255,255,255,0.28); }
+                }
+                HorizontalLayout {
+                    spacing: 12px;
+                    Rectangle { width: 42px; height: 42px; border-radius: 9px; background: rgba(255,255,255,0.08); }
+                    VerticalLayout {
+                        alignment: center; spacing: 3px;
+                        Text { text: "Love On The Brain"; font-size: 12px; font-weight: 800; color: white; overflow: elide; }
+                        Text { text: "Rihanna"; font-size: 10px; font-weight: 700; color: #B000FF; overflow: elide; }
+                    }
+                }
+                Rectangle { height: 6px; border-radius: 3px; background: rgba(255,255,255,0.10);
+                    Rectangle { width: 26%; height: 100%; border-radius: parent.border-radius; background: #B000FF; }
+                }
+            }
+        }
+
+        if root.widget-kind == "year_progress" || root.widget-kind == "day_progress" || root.widget-kind == "month_progress": Rectangle {
+            width: 100%; height: 100%; background: transparent;
+            VerticalLayout {
+                padding: 24px;
+                spacing: 16px;
+
+                HorizontalLayout {
+                    alignment: space-between;
+                    HorizontalLayout {
+                        spacing: 8px;
+                        alignment: start;
+                        if root.widget-kind == "year_progress": Path {
+                            width: 16px; height: 16px;
+                            viewbox-width: 24; viewbox-height: 24;
+                            stroke: #FFD200; stroke-width: 2.5px;
+                            commands: "M 4 15 C 4 15 5 14 8 14 C 11 14 13 16 16 16 C 19 16 20 15 20 15 V 3 C 20 3 19 4 16 4 C 13 4 11 2 8 2 C 5 2 4 3 4 3 Z M 4 22 L 4 15";
+                        }
+                        if root.widget-kind == "day_progress": Path {
+                            width: 16px; height: 16px;
+                            viewbox-width: 24; viewbox-height: 24;
+                            stroke: #00E5FF; stroke-width: 2.5px; stroke-line-cap: round; stroke-line-join: round;
+                            commands: "M12 8v4l3 3 M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z";
+                        }
+                        if root.widget-kind == "month_progress": Path {
+                            width: 16px; height: 16px;
+                            viewbox-width: 24; viewbox-height: 24;
+                            stroke: #FF2D55; stroke-width: 2.5px; stroke-line-cap: round; stroke-line-join: round;
+                            commands: "M19 4H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z M16 2v4 M8 2v4 M3 10h18";
+                        }
+                        Text {
+                            text: root.widget-kind == "year_progress" ? "Year Journey" : root.widget-kind == "day_progress" ? "Day Journey" : "Month Journey";
+                            font-size: 14px;
+                            font-weight: 700;
+                            color: root.widget-kind == "year_progress" ? #FFD200 : root.widget-kind == "day_progress" ? #00E5FF : #FF2D55;
+                            vertical-alignment: center;
+                        }
+                    }
+                    Text {
+                        text: root.copy-date-str;
+                        font-size: 13px;
+                        font-weight: 500;
+                        color: rgba(255, 255, 255, 0.6);
+                        vertical-alignment: center;
+                    }
+                }
+
+                HorizontalLayout {
+                    alignment: space-between;
+                    Text {
+                        text: root.copy-pct-str;
+                        font-size: 38px;
+                        font-weight: 700;
+                        color: white;
+                        vertical-alignment: bottom;
+                    }
+                    Text {
+                        text: root.copy-detail-str;
+                        font-size: 15px;
+                        font-weight: 600;
+                        color: rgba(255, 255, 255, 0.85);
+                        vertical-alignment: bottom;
+                    }
+                }
+
+                Rectangle {
+                    height: 14px;
+                    background: rgba(255, 255, 255, 0.1);
+                    border-radius: 7px;
+                    clip: true;
+                    Rectangle {
+                        x: 0;
+                        width: parent.width * root.copy-pct-val;
+                        height: 100%;
+                        background: root.widget-kind == "year_progress" ? @linear-gradient(90deg, #FFD200 0%, #FF9500 100%) : root.widget-kind == "day_progress" ? @linear-gradient(90deg, #00E5FF 0%, #0066FF 100%) : @linear-gradient(90deg, #FF2D55 0%, #A000FF 100%);
+                        border-radius: 7px;
+                    }
+                }
+            }
+        }
+
+        if root.widget-kind == "notes": Rectangle {
+            width: 100%; height: 100%; background: transparent;
+            VerticalLayout {
+                padding-left: 20px; padding-right: 20px; padding-top: 14px; padding-bottom: 14px; spacing: 10px;
+                HorizontalLayout {
+                    height: 18px; spacing: 8px; alignment: start;
+                    Path { width: 14px; height: 14px; viewbox-width: 24; viewbox-height: 24; stroke: #FFCC00; stroke-width: 2.5px; stroke-line-cap: round; stroke-line-join: round; commands: "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z M14 2v6h6 M16 13H8 M16 17H8 M10 9H8"; y: (parent.height - self.height) / 2; }
+                    Text { text: "Quick Notes"; font-size: 13px; font-weight: 750; color: #FFCC00; vertical-alignment: center; }
+                }
+                Rectangle {
+                    vertical-stretch: 1; border-radius: 8px; border-width: 1px; border-color: rgba(255,255,255,0.06); background: rgba(255,255,255,0.03); clip: true;
+                    Text { x: 10px; y: 8px; width: parent.width - 20px; text: "Write quick thoughts, lists,\nand reminders."; font-size: 12px; color: rgba(255,255,255,0.58); wrap: word-wrap; }
+                }
+            }
+        }
+
+        if root.widget-kind == "todo": Rectangle {
+            width: 100%; height: 100%; background: transparent;
+            VerticalLayout {
+                padding-left: 20px; padding-right: 20px; padding-top: 14px; padding-bottom: 14px; spacing: 6px;
+                HorizontalLayout {
+                    height: 18px; spacing: 8px; alignment: start;
+                    Path { width: 14px; height: 14px; viewbox-width: 24; viewbox-height: 24; stroke: #FF9500; stroke-width: 2.5px; stroke-line-cap: round; stroke-line-join: round; commands: "M9 11l3 3L22 4 M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"; y: (parent.height - self.height) / 2; }
+                    Text { text: "To-Do List"; font-size: 13px; font-weight: 750; color: #FF9500; vertical-alignment: center; }
+                }
+                Rectangle { height: 26px; border-radius: 6px; border-width: 1px; border-color: rgba(255,255,255,0.04); background: rgba(255,255,255,0.02);
+                    HorizontalLayout { padding-left: 8px; padding-right: 8px; spacing: 8px;
+                        Rectangle { width: 16px; height: 16px; border-radius: 4px; background: #FF9500; y: 5px; }
+                        Text { text: "Review layout plan"; font-size: 11px; color: rgba(255,255,255,0.62); vertical-alignment: center; }
+                    }
+                }
+                Rectangle { height: 26px; border-radius: 6px; border-width: 1px; border-color: rgba(255,255,255,0.04); background: rgba(255,255,255,0.02);
+                    HorizontalLayout { padding-left: 8px; padding-right: 8px; spacing: 8px;
+                        Rectangle { width: 16px; height: 16px; border-radius: 4px; border-width: 1.5px; border-color: rgba(255,255,255,0.3); y: 5px; }
+                        Text { text: "Test new widgets"; font-size: 11px; color: rgba(255,255,255,0.62); vertical-alignment: center; }
+                    }
+                }
+            }
+        }
+
+        if root.widget-kind == "quotes": Rectangle {
+            width: 100%; height: 100%; background: transparent;
+            VerticalLayout {
+                padding-left: 20px; padding-right: 20px; padding-top: 14px; padding-bottom: 14px; spacing: 12px;
+                HorizontalLayout { height: 18px; spacing: 8px; Text { text: "\""; font-size: 24px; font-weight: 950; color: #FF2D55; vertical-alignment: center; } Text { text: "Daily Wisdom"; font-size: 13px; font-weight: 750; color: #FF2D55; vertical-alignment: center; } }
+                Rectangle { vertical-stretch: 1; border-radius: 12px; background: rgba(255,255,255,0.03); border-width: 1px; border-color: rgba(255,255,255,0.06);
+                    Text { text: "\"Everything is within.\""; font-size: 16px; color: white; horizontal-alignment: center; vertical-alignment: center; }
+                }
+            }
+        }
+
+        if root.widget-kind == "picture" || root.widget-kind == "video": Rectangle {
+            width: 100%; height: 100%; background: transparent;
+            VerticalLayout {
+                padding-left: 20px; padding-right: 20px; padding-top: 14px; padding-bottom: 14px; spacing: 12px;
+                HorizontalLayout { height: 18px; alignment: space-between;
+                    Text { text: root.widget-kind == "picture" ? "Picture Frame" : "Video Frame"; font-size: 13px; font-weight: 750; color: root.widget-kind == "picture" ? white : #00D9FF; }
+                    Text { text: root.widget-kind == "video" ? "LOOP" : "DRAG"; font-size: 9px; font-weight: 950; color: rgba(255,255,255,0.25); }
+                }
+                Rectangle { vertical-stretch: 1; border-radius: 12px; background: rgba(255,255,255,0.025); border-width: 1px; border-color: rgba(255,255,255,0.06);
+                    Rectangle { width: 30px; height: 30px; border-radius: 15px; x: 14px; y: 14px; background: rgba(255,255,255,0.12);
+                        Text { text: root.widget-kind == "picture" ? "+" : "▶"; font-size: 18px; font-weight: 850; color: white; horizontal-alignment: center; vertical-alignment: center; }
+                    }
+                }
+            }
+        }
+
+        if root.widget-kind == "battery": Rectangle {
+            width: 100%; height: 100%; background: transparent;
+            Rectangle { x: 22px; y: 20px; width: 70px; height: 70px; border-radius: 35px; border-width: 8px; border-color: #32D74B;
+                Path { x: 21px; y: 24px; width: 28px; height: 22px; viewbox-width: 48; viewbox-height: 32; stroke: rgba(255,255,255,0.72); stroke-width: 3px; commands: "M4 24H44 M10 24V8H38V24"; }
+            }
+            Path { x: parent.width - 58px; y: 50px; width: 26px; height: 34px; viewbox-width: 32; viewbox-height: 44; fill: #32D74B; commands: "M18 1L5 24h10l-3 19 15-27H16L18 1z"; }
+            Text { x: 24px; y: 104px; text: "85%"; font-size: 48px; font-weight: 780; color: white; }
+            Text { x: 28px; y: 160px; text: "Discharging"; font-size: 11px; font-weight: 650; color: rgba(255,255,255,0.50); }
+        }
+
+        if root.widget-kind == "calendar_focus": Rectangle {
+            width: 100%; height: 100%; background: transparent;
+            HorizontalLayout {
+                padding: 20px; spacing: 30px; alignment: center;
+                VerticalLayout { alignment: center; spacing: 2px;
+                    HorizontalLayout { spacing: 6px; Text { text: "Wed"; font-size: 26px; font-weight: 850; color: #FF453A; } Text { text: "Jul"; font-size: 26px; font-weight: 750; color: rgba(255,255,255,0.50); } }
+                    Text { text: "1"; font-size: 74px; font-weight: 760; color: white; }
+                }
+                Rectangle { width: 98px; height: 98px; border-radius: 49px; border-width: 10px; border-color: #1E90FF;
+                    Text { text: "25:00"; font-size: 24px; font-weight: 850; color: white; horizontal-alignment: center; y: 26px; }
+                    Rectangle { width: 46px; height: 18px; border-radius: 5px; background: rgba(10,132,255,0.26); x: 26px; y: 58px; Text { text: "FOCUS"; font-size: 8px; font-weight: 950; color: #2E9BFF; horizontal-alignment: center; vertical-alignment: center; } }
+                }
+            }
+        }
+
+        if root.widget-kind == "apps_container": Rectangle {
+            width: 100%; height: 100%; background: transparent;
+            Text { text: "Drop your apps"; font-size: 22px; font-weight: 850; color: white; horizontal-alignment: center; vertical-alignment: center; }
+        }
+
+        if root.widget-kind == "streak": Rectangle {
+            width: 100%; height: 100%; background: transparent;
+            HorizontalLayout {
+                padding: 20px; spacing: 18px;
+                VerticalLayout { width: 90px; spacing: 2px; Text { text: "MONDAY"; font-size: 13px; font-weight: 850; color: #007AFF; } Text { text: "September"; font-size: 12px; color: rgba(255,255,255,0.7); } Text { text: "07"; font-size: 52px; font-weight: 700; color: white; } }
+                VerticalLayout { spacing: 6px; Text { text: "S   M   T   W   T   F   S"; font-size: 9px; font-weight: 800; color: rgba(255,255,255,0.62); } Text { text: "     1   2   3   4   5"; font-size: 10px; color: rgba(255,255,255,0.8); } Text { text: "6   7   8   9  10  11  12"; font-size: 10px; color: white; } Text { text: "13 14 15 16 17 18 19"; font-size: 10px; color: rgba(255,255,255,0.75); } Text { text: "20 21 22 23 24 25 26"; font-size: 10px; color: rgba(255,255,255,0.75); } }
+            }
+        }
+
+        if root.widget-kind == "focus_score": Rectangle {
+            width: 100%; height: 100%; background: transparent;
+            Text { x: 24px; y: 19px; text: "FOCUS SCORE"; color: rgba(255,255,255,0.78); font-size: 15px; font-weight: 900; letter-spacing: 3px; }
+            Rectangle { x: 25px; y: 48px; width: 70px; height: 4px; border-radius: 3px; background: @linear-gradient(90deg, #b55cff 0%, #6f8bff 100%); }
+            Path { x: 42px; y: 71px; width: 38px; height: 50px; viewbox-width: 64; viewbox-height: 80; fill: #a855f7; stroke: #f5e8ff; stroke-width: 1.2px; commands: "M39 2L9 42H31L22 78L58 28H36L39 2Z"; }
+            Text { x: 106px; y: 66px; width: 158px; height: 46px; text: "1h"; color: white; font-size: 34px; font-weight: 950; vertical-alignment: center; }
+            Text { x: 108px; y: 112px; text: "Total Focus"; color: rgba(255,255,255,0.54); font-size: 12px; font-weight: 850; }
+            Rectangle { x: 270px; y: 34px; width: 1px; height: 94px; background: rgba(255,255,255,0.08); }
+            Rectangle { x: 304px; y: 38px; width: 70px; height: 70px; border-radius: 35px; border-width: 7px; border-color: #FF9F0A; }
+            Text { x: 306px; y: 56px; width: 66px; height: 28px; text: "3"; color: white; font-size: 26px; font-weight: 950; horizontal-alignment: center; vertical-alignment: center; }
+            Text { x: 306px; y: 83px; width: 66px; height: 14px; text: "SCORE"; color: #b47cff; font-size: 9px; font-weight: 950; horizontal-alignment: center; }
+            Rectangle { x: 24px; y: 148px; width: 332px; height: 19px; border-radius: 7px; background: rgba(255,255,255,0.045);
+                Rectangle { x: 10px; y: 6.5px; width: 6px; height: 6px; border-radius: 3px; background: #b45cff; }
+                Text { x: 27px; width: 100px; height: 19px; text: "Focus Goal"; color: white; font-size: 11px; font-weight: 900; overflow: elide; vertical-alignment: center; }
+                Rectangle { x: 150px; y: 7.5px; width: 128px; height: 4px; border-radius: 3px; background: rgba(255,255,255,0.10); Rectangle { width: 35%; height: 100%; border-radius: parent.border-radius; background: #b45cff; } }
+                Text { x: 286px; width: 38px; height: 19px; text: "30m"; color: #b45cff; font-size: 11px; font-weight: 900; horizontal-alignment: right; vertical-alignment: center; }
+            }
+        }
+
+        if root.widget-kind != "media" && root.widget-kind != "year_progress" && root.widget-kind != "day_progress" && root.widget-kind != "month_progress" && root.widget-kind != "notes" && root.widget-kind != "todo" && root.widget-kind != "quotes" && root.widget-kind != "picture" && root.widget-kind != "video" && root.widget-kind != "battery" && root.widget-kind != "calendar_focus" && root.widget-kind != "apps_container" && root.widget-kind != "streak" && root.widget-kind != "focus_score": VerticalLayout {
+            padding: 16px; spacing: 10px;
+            HorizontalLayout {
+                height: 30px; alignment: space-between;
+                Text { text: root.widget-kind; font-size: 10px; font-weight: 900; color: rgba(255,255,255,0.55); vertical-alignment: center; }
+                Text { text: root.is-locked ? "LOCKED" : "LIVE"; font-size: 9px; font-weight: 900; color: rgba(255,255,255,0.28); vertical-alignment: center; }
+            }
+            Text { text: root.widget-title; font-size: 24px; font-weight: 800; color: white; overflow: elide; }
+            Text { text: "Native widget"; font-size: 12px; font-weight: 650; color: rgba(255,255,255,0.48); }
+        }
+    }
+}
+
+export component AppsContainerWidgetWindow inherits Window {
+    no-frame: true;
+    background: transparent;
+    always-on-top: false;
+    width: 320px;
+    height: 190px;
+    in-out property <string> instance-title: "Raven Apps Container Widget";
+    title: root.instance-title;
+
+    in property <[SlintAppShortcut]> app-items: [];
+    in-out property <bool> is-locked: true;
+    in-out property <float> bg-opacity: 0.96;
+    in-out property <int> border-radius-val: 24;
+    in-out property <bool> drop-active: false;
+    in-out property <int> dragging-app-index: -1;
+    in-out property <bool> app-menu-visible: false;
+    in-out property <int> app-menu-index: -1;
+
+    callback dummy_tracker();
+    callback drag_window();
+    callback show_context_menu();
+    callback launch_app(int);
+    callback remove_app(int);
+
+    Rectangle {
+        width: 100%;
+        height: 100%;
+        border-radius: root.border-radius-val * 1px;
+        background: @linear-gradient(145deg, rgba(22, 22, 26, root.bg-opacity * 0.88) 0%, rgba(5, 5, 8, root.bg-opacity * 0.94) 100%);
+        border-width: 1px;
+        border-color: root.drop-active ? rgba(0, 255, 136, 0.72) : rgba(255, 255, 255, 0.14);
+
+        Rectangle {
+            width: 100%;
+            height: 100%;
+            border-radius: parent.border-radius;
+            background: @linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.0) 40%);
+        }
+
+        TouchArea {
+            width: 100%;
+            height: 100%;
+            pointer-event(evt) => {
+                if evt.button == PointerEventButton.left && evt.kind == PointerEventKind.down {
+                    if root.app-menu-visible {
+                        root.app-menu-visible = false;
+                        root.app-menu-index = -1;
+                    } else if !root.is-locked {
+                        root.drag_window();
+                    }
+                } else if evt.button == PointerEventButton.right && evt.kind == PointerEventKind.down {
+                    if root.app-items.length == 0 || self.mouse-x < 12px || self.mouse-x > self.width - 12px || self.mouse-y < 16px || self.mouse-y > self.height - 12px {
+                        root.app-menu-visible = false;
+                        root.app-menu-index = -1;
+                        root.show_context_menu();
+                    }
+                }
+            }
+        }
+
+        if root.app-items.length == 0: Rectangle {
+            width: 100%;
+            height: 100%;
+            background: transparent;
+
+            Text {
+                text: "Drop your apps";
+                width: parent.width;
+                height: 30px;
+                y: (parent.height - self.height) / 2;
+                font-size: 18px;
+                font-weight: 850;
+                color: white;
+                horizontal-alignment: center;
+                vertical-alignment: center;
+            }
+        }
+
+        if root.app-items.length > 0: Rectangle {
+            x: 12px;
+            y: 16px;
+            width: parent.width - 24px;
+            height: parent.height - 28px;
+            clip: true;
+
+            Flickable {
+                width: 100%;
+                height: 100%;
+                viewport-width: parent.width;
+                viewport-height: ((root.app-items.length + 3) / 4) * 76px;
+
+                Rectangle {
+                    width: parent.viewport-width;
+                    height: parent.viewport-height;
+                    background: transparent;
+
+                    for item[index] in root.app-items: Rectangle {
+                        x: 6px + Math.mod(index, 4) * 72px;
+                        y: Math.floor(index / 4) * 76px;
+                        width: 60px;
+                        height: 70px;
+                        border-radius: 14px;
+                        background: app-touch.has-hover ? rgba(255, 255, 255, 0.07) : transparent;
+                        border-width: app-touch.has-hover ? 1px : 0px;
+                        border-color: rgba(255, 255, 255, 0.08);
+
+                        app-touch := TouchArea {
+                            width: 100%;
+                            height: 100%;
+                            clicked => { root.launch_app(index); }
+                            pointer-event(evt) => {
+                                if evt.button == PointerEventButton.left && evt.kind == PointerEventKind.down {
+                                    root.app-menu-visible = false;
+                                    root.app-menu-index = -1;
+                                    root.dragging-app-index = index;
+                                } else if evt.button == PointerEventButton.right && evt.kind == PointerEventKind.down {
+                                    root.app-menu-visible = false;
+                                    root.app-menu-index = index;
+                                    root.app-menu-visible = true;
+                                } else if root.dragging-app-index == index && evt.kind == PointerEventKind.up {
+                                    if self.mouse-x < -10px || self.mouse-x > self.width + 10px || self.mouse-y < -10px || self.mouse-y > self.height + 10px {
+                                        root.remove_app(index);
+                                    }
+                                    root.dragging-app-index = -1;
+                                } else if root.dragging-app-index == index && evt.kind == PointerEventKind.cancel {
+                                    root.dragging-app-index = -1;
+                                }
+                            }
+                        }
+
+                        VerticalLayout {
+                            padding-left: 2px;
+                            padding-right: 2px;
+                            padding-top: 4px;
+                            spacing: 5px;
+
+                            Rectangle {
+                                width: 42px;
+                                height: 42px;
+                                border-radius: 12px;
+                                background: rgba(255, 255, 255, 0.08);
+                                border-width: 1px;
+                                border-color: rgba(255, 255, 255, 0.10);
+
+                                if item.has_icon: Image {
+                                    width: 31px;
+                                    height: 31px;
+                                    x: 5.5px;
+                                    y: 5.5px;
+                                    source: item.icon;
+                                    image-fit: contain;
+                                }
+
+                                if !item.has_icon: Path {
+                                    width: 25px;
+                                    height: 25px;
+                                    x: 8.5px;
+                                    y: 8.5px;
+                                    viewbox-width: 24;
+                                    viewbox-height: 24;
+                                    stroke: #B000FF;
+                                    stroke-width: 2.2px;
+                                    commands: "M 4 4 H 10 V 10 H 4 Z M 14 4 H 20 V 10 H 14 Z M 4 14 H 10 V 20 H 4 Z M 14 14 H 20 V 20 H 14 Z";
+                                }
+                            }
+
+                            Text {
+                                text: item.name;
+                                width: 58px;
+                                height: 17px;
+                                font-size: 9px;
+                                font-weight: 750;
+                                color: rgba(255, 255, 255, 0.88);
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+                                overflow: elide;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if root.app-menu-visible: TouchArea {
+            width: 100%;
+            height: 100%;
+            pointer-event(evt) => {
+                if evt.kind == PointerEventKind.down {
+                    root.app-menu-visible = false;
+                    root.app-menu-index = -1;
+                }
+            }
+        }
+
+        if root.app-menu-visible && root.app-menu-index >= 0: Rectangle {
+            x: 24px + Math.mod(root.app-menu-index, 4) * 72px;
+            y: 24px + Math.floor(root.app-menu-index / 4) * 76px;
+            width: 92px;
+            height: 34px;
+            border-radius: 10px;
+            background: rgba(18, 18, 22, 0.98);
+            border-width: 1px;
+            border-color: rgba(255, 255, 255, 0.16);
+
+            TouchArea {
+                width: 100%;
+                height: 100%;
+                clicked => {
+                    root.remove_app(root.app-menu-index);
+                    root.app-menu-visible = false;
+                    root.app-menu-index = -1;
+                }
+            }
+
+            HorizontalLayout {
+                padding-left: 10px;
+                padding-right: 10px;
+                alignment: center;
+
+                Text {
+                    text: "Remove";
+                    font-size: 12px;
+                    font-weight: 800;
+                    color: #FF6B77;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                }
+            }
+        }
+    }
+}
+
+export component FocusScoreWidgetWindow inherits Window {
+    no-frame: true;
+    background: transparent;
+    always-on-top: false;
+    width: 380px;
+    height: 190px;
+    in-out property <string> instance-title: "Raven Focus Score Widget";
+    title: root.instance-title;
+
+    in property <[SlintFocusScoreRow]> preset-rows: [];
+    in-out property <string> total-focus-label: "0m";
+    in-out property <int> focus-score: 0;
+    in-out property <image> score-ring-img;
+    in-out property <bool> is-locked: true;
+    in-out property <float> bg-opacity: 0.96;
+    in-out property <int> border-radius-val: 28;
+
+    callback drag_window();
+    callback show_context_menu();
+    callback dummy_tracker();
+
+    Rectangle {
+        width: 100%;
+        height: 100%;
+        border-radius: root.border-radius-val * 1px;
+        background: @linear-gradient(145deg, rgba(20, 18, 32, root.bg-opacity * 0.92) 0%, rgba(6, 7, 14, root.bg-opacity * 0.96) 100%);
+        border-width: 1px;
+        border-color: rgba(166, 108, 255, 0.36);
+        clip: true;
+
+        TouchArea {
+            width: 100%;
+            height: 134px;
+            pointer-event(evt) => {
+                if evt.button == PointerEventButton.left && evt.kind == PointerEventKind.down {
+                    if !root.is-locked { root.drag_window(); }
+                } else if evt.button == PointerEventButton.right && evt.kind == PointerEventKind.down {
+                    root.show_context_menu();
+                }
+            }
+        }
+
+        Text { x: 24px; y: 19px; text: "FOCUS SCORE"; color: rgba(255,255,255,0.78); font-size: 15px; font-weight: 900; letter-spacing: 3px; }
+        Rectangle { x: 25px; y: 48px; width: 70px; height: 4px; border-radius: 3px; background: @linear-gradient(90deg, #b55cff 0%, #6f8bff 100%); }
+        Path {
+            x: 42px; y: 71px; width: 38px; height: 50px;
+            viewbox-width: 64; viewbox-height: 80;
+            fill: #a855f7;
+            stroke: #f5e8ff;
+            stroke-width: 1.2px;
+            commands: "M39 2L9 42H31L22 78L58 28H36L39 2Z";
+        }
+        Text { x: 106px; y: 66px; width: 158px; height: 46px; text: root.total-focus-label == "" ? "0m" : root.total-focus-label; color: white; font-size: 34px; font-weight: 950; vertical-alignment: center; }
+        Text { x: 108px; y: 112px; text: "Total Focus"; color: rgba(255,255,255,0.54); font-size: 12px; font-weight: 850; }
+        Rectangle { x: 270px; y: 34px; width: 1px; height: 94px; background: rgba(255,255,255,0.08); }
+        Image { x: 294px; y: 29px; width: 80px; height: 80px; source: root.score-ring-img; image-fit: contain; }
+        Text { x: 300px; y: 50px; width: 68px; height: 28px; text: root.focus-score; color: white; font-size: 26px; font-weight: 950; horizontal-alignment: center; vertical-alignment: center; }
+        Text { x: 300px; y: 78px; width: 68px; height: 14px; text: "SCORE"; color: #b47cff; font-size: 9px; font-weight: 950; horizontal-alignment: center; }
+
+        if root.preset-rows.length > 0: ScrollView {
+            x: 24px; y: 138px; width: 332px; height: 40px;
+            viewport-width: 332px;
+            viewport-height: root.preset-rows.length * 21px;
+            horizontal-scrollbar-policy: always-off;
+            vertical-scrollbar-policy: always-off;
+            Rectangle {
+                width: parent.viewport-width;
+                height: parent.viewport-height;
+                background: transparent;
+                for row[index] in root.preset-rows: Rectangle {
+                    x: 0px; y: index * 21px; width: 332px; height: 19px;
+                    border-radius: 7px; background: rgba(255,255,255,0.045);
+                    Rectangle { x: 10px; y: 6.5px; width: 6px; height: 6px; border-radius: 3px; background: row.accent; }
+                    Text { x: 27px; width: 100px; height: 19px; text: row.goal; color: white; font-size: 11px; font-weight: 900; overflow: elide; vertical-alignment: center; }
+                    Rectangle {
+                        x: 150px; y: 7.5px; width: 128px; height: 4px; border-radius: 3px; background: rgba(255,255,255,0.10);
+                        Rectangle { width: parent.width * row.progress; height: 100%; border-radius: parent.border-radius; background: row.accent; }
+                    }
+                    Text { x: 286px; width: 38px; height: 19px; text: row.duration-label; color: row.accent; font-size: 11px; font-weight: 900; horizontal-alignment: right; vertical-alignment: center; }
+                }
+            }
+        }
+    }
+}
+
+export component StreakWidgetWindow inherits Window {
+    no-frame: true;
+    background: transparent;
+    always-on-top: false;
+    width: 320px;
+    height: 150px;
+    in-out property <string> instance-title: "Raven Calendar Widget";
+    title: root.instance-title;
+
+    in property <[SlintStreakDay]> week-days: [];
+    in property <[SlintStreakDay]> mini-days: [];
+    in-out property <string> streak-name: "Enter your streak";
+    in-out property <int> current-streak: 0;
+    in-out property <int> longest-streak: 0;
+    in-out property <string> streak-message: "Complete a focus session today";
+    in-out property <bool> is-locked: true;
+    in-out property <float> bg-opacity: 0.96;
+    in-out property <int> border-radius-val: 24;
+
+    in-out property <bool> is-editing: false;
+    in-out property <int> selected-month: 0;
+    in-out property <int> selected-year: 0;
+    in-out property <string> month-name: "";
+    in-out property <int> view-mode: 0; // 0 = Calendar, 1 = Month selection, 2 = Year selection
+    in-out property <string> edit-temp-name: "";
+    in-out property <string> today-day-name: "";
+    in-out property <string> today-month-name: "";
+    in-out property <string> today-day-number: "";
+
+    callback drag_window();
+    callback show_context_menu();
+    callback dummy_tracker();
+    callback rename_streak(string);
+    callback select_month_year(int, int);
+    callback toggle_day(int);
+    callback toggle_week_day(int);
+
+    Rectangle {
+        width: 100%;
+        height: 100%;
+        border-radius: root.border-radius-val * 1px;
+        background: @linear-gradient(145deg, rgba(22, 22, 26, root.bg-opacity * 0.82) 0%, rgba(5, 5, 8, root.bg-opacity * 0.88) 100%);
+        border-width: 1px;
+        border-color: rgba(255, 255, 255, 0.13);
+        clip: true;
+
+        // Glossy reflection overlay
+        Rectangle {
+            width: 100%;
+            height: 100%;
+            border-radius: parent.border-radius;
+            background: @linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.0) 35%);
+        }
+
+        TouchArea {
+            width: 100%;
+            height: 100%;
+            pointer-event(evt) => {
+                if evt.button == PointerEventButton.left && evt.kind == PointerEventKind.down {
+                    if !root.is-locked { root.drag_window(); }
+                } else if evt.button == PointerEventButton.right && evt.kind == PointerEventKind.down {
+                    root.show_context_menu();
+                }
+            }
+        }
+
+        // ── LEFT COLUMN ──
+        VerticalLayout {
+            x: 20px;
+            y: 18px;
+            width: 90px;
+            spacing: 2px;
+            alignment: start;
+
+            // Day of Week
+            Text {
+                text: root.today-day-name;
+                font-size: 13px; font-weight: 850;
+                color: #007AFF;
+                horizontal-alignment: left;
+            }
+
+            // Month
+            Text {
+                text: root.today-month-name;
+                font-size: 12px; font-weight: 600;
+                color: rgba(255, 255, 255, 0.7);
+                horizontal-alignment: left;
+            }
+
+            // Space to push the day number down slightly
+            Rectangle { height: 2px; }
+
+            // Day Number
+            Text {
+                text: root.today-day-number;
+                font-size: 52px; font-weight: 700;
+                color: white;
+                letter-spacing: 0px;
+                horizontal-alignment: left;
+            }
+        }
+
+        // ── RIGHT COLUMN ──
+        // Days of week header: S M T W T F S
+        if root.view-mode == 0 : HorizontalLayout {
+            x: 124px; y: 18px;
+            width: 182px; height: 16px;
+            for lbl[li] in ["S","M","T","W","T","F","S"]: Text {
+                width: 26px;
+                text: lbl;
+                font-size: 9px; font-weight: 800;
+                color: (li == 0 || li == 6) ? rgba(255, 255, 255, 0.35) : rgba(255, 255, 255, 0.75);
+                horizontal-alignment: center;
+            }
+        }
+
+        // Calendar Grid
+        if root.view-mode == 0 : FocusScope {
+            x: 124px; y: 38px;
+            width: 182px; height: 100px;
+
+            for item[index] in root.mini-days: Rectangle {
+                property <int> cell-col: Math.mod(index, 7);
+                property <int> cell-row: Math.floor(index / 7);
+                x: cell-col * 26px;
+                y: cell-row * 16px;
+                width: 26px; height: 16px;
+
+                property <bool> is-valid-day: item.label == "current";
+                property <bool> is-weekend: cell-col == 0 || cell-col == 6;
+
+                // Highlight circle container centered
+                if (is-valid-day && item.today) : Rectangle {
+                    width: 18px; height: 18px;
+                    border-radius: 9px;
+                    background: #007AFF;
+                    x: (parent.width - self.width) / 2;
+                    y: (parent.height - self.height) / 2;
+                }
+
+                if is-valid-day : Text {
+                    text: item.day_number;
+                    width: 100%; height: 100%;
+                    font-size: 9px; font-weight: 700;
+                    color: item.today ? white : (is-weekend ? rgba(255, 255, 255, 0.4) : white);
+                    horizontal-alignment: center; vertical-alignment: center;
+                }
+
+                TouchArea {
+                    width: 100%; height: 100%;
+                    enabled: is-valid-day;
+                    clicked => {
+                        root.toggle_day(index);
+                    }
+                }
+            }
+        }
+
+        // Month Selector Grid
+        if root.view-mode == 1 : Rectangle {
+            x: 124px; y: 18px;
+            width: 182px; height: 116px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+
+            for m-name[m-idx] in [
+                "Jan", "Feb", "Mar", "Apr",
+                "May", "Jun", "Jul", "Aug",
+                "Sep", "Oct", "Nov", "Dec"
+            ]: Rectangle {
+                x: Math.mod(m-idx, 3) * 60px + 2px;
+                y: Math.floor(m-idx / 3) * 26px + 6px;
+                width: 56px; height: 22px;
+                border-radius: 4px;
+                background: m-touch.has-hover ? rgba(0, 122, 255, 0.15) : (root.selected-month == m-idx + 1 ? #007AFF : rgba(255, 255, 255, 0.02));
+                border-width: 1px;
+                border-color: root.selected-month == m-idx + 1 ? #007AFF : rgba(255, 255, 255, 0.05);
+
+                Text {
+                    text: m-name;
+                    font-size: 10px; font-weight: 700; color: white;
+                    horizontal-alignment: center; vertical-alignment: center;
+                }
+
+                m-touch := TouchArea {
+                    clicked => {
+                        root.selected-month = m-idx + 1;
+                        root.view-mode = 0;
+                        root.select_month_year(root.selected-month, root.selected-year);
+                    }
+                }
+            }
+        }
+
+        // Year Selector Grid
+        if root.view-mode == 2 : Rectangle {
+            x: 124px; y: 18px;
+            width: 182px; height: 116px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+
+            for y-offset[y-idx] in [
+                -4, -3, -2,
+                -1,  0,  1,
+                2,  3,  4
+            ]: Rectangle {
+                x: Math.mod(y-idx, 3) * 60px + 2px;
+                y: Math.floor(y-idx / 3) * 32px + 10px;
+                width: 56px; height: 26px;
+                border-radius: 4px;
+                background: y-touch.has-hover ? rgba(0, 122, 255, 0.15) : (y-offset == 0 ? #007AFF : rgba(255, 255, 255, 0.02));
+                border-width: 1px;
+                border-color: y-offset == 0 ? #007AFF : rgba(255, 255, 255, 0.05);
+
+                Text {
+                    text: root.selected-year + y-offset;
+                    font-size: 10px; font-weight: 700; color: white;
+                    horizontal-alignment: center; vertical-alignment: center;
+                }
+
+                y-touch := TouchArea {
+                    clicked => {
+                        root.selected-year = root.selected-year + y-offset;
+                        root.view-mode = 0;
+                        root.select_month_year(root.selected-month, root.selected-year);
+                    }
+                }
+            }
+        }
+    }
+}
+
+export component YearProgressWidgetWindow inherits Window {
+    background: transparent;
+    always-on-top: false;
+    width: 320px;
+    height: 150px;
+    in-out property <string> instance-title: "Raven Year Progress Widget";
+    title: root.instance-title;
+
+    in-out property <string> date-str: "Jun 8";
+    in-out property <string> pct-str: "43.5%";
+    in-out property <float> pct-val: 0.435;
+    in-out property <string> days-str: "159/365 Days";
+    in-out property <bool> is-locked: true;
+    in-out property <float> bg-opacity: 0.96;
+    in-out property <int> border-radius-val: 24;
+
+    callback drag_window();
+    callback show_context_menu();
+    callback dummy_tracker();
+
+    Rectangle {
+        width: 100%;
+        height: 100%;
+        border-radius: root.border-radius-val * 1px;
+        background: @linear-gradient(145deg, rgba(22, 22, 26, root.bg-opacity * 0.82) 0%, rgba(5, 5, 8, root.bg-opacity * 0.88) 100%);
+        border-width: 1px;
+        border-color: rgba(255, 255, 255, 0.13);
+
+        Rectangle {
+            width: 100%;
+            height: 100%;
+            border-radius: parent.border-radius;
+            background: @linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.0) 35%);
+        }
+
+        TouchArea {
+            width: 100%;
+            height: 100%;
+            pointer-event(evt) => {
+                if evt.button == PointerEventButton.left && evt.kind == PointerEventKind.down {
+                    if !root.is-locked {
+                        root.drag_window();
+                    }
+                } else if evt.button == PointerEventButton.right && evt.kind == PointerEventKind.down {
+                    root.show_context_menu();
+                }
+            }
+        }
+
+        VerticalLayout {
+            padding: 24px;
+            spacing: 16px;
+
+            // Row 1: Flag + "Year Journey" | Date
+            HorizontalLayout {
+                alignment: space-between;
+                HorizontalLayout {
+                    spacing: 8px;
+                    alignment: start;
+                    Path {
+                        width: 16px;
+                        height: 16px;
+                        viewbox-width: 24;
+                        viewbox-height: 24;
+                        stroke: #FFD200;
+                        stroke-width: 2.5px;
+                        commands: "M 4 15 C 4 15 5 14 8 14 C 11 14 13 16 16 16 C 19 16 20 15 20 15 V 3 C 20 3 19 4 16 4 C 13 4 11 2 8 2 C 5 2 4 3 4 3 Z M 4 22 L 4 15";
+                    }
+                    Text {
+                        text: "Year Journey";
+                        font-size: 14px;
+                        font-weight: 700;
+                        color: #FFD200;
+                        vertical-alignment: center;
+                    }
+                }
+                Text {
+                    text: root.date-str;
+                    font-size: 13px;
+                    font-weight: 500;
+                    color: rgba(255, 255, 255, 0.6);
+                    vertical-alignment: center;
+                }
+            }
+
+            // Row 2: Large % | Day Count
+            HorizontalLayout {
+                alignment: space-between;
+                Text {
+                    text: root.pct-str;
+                    font-size: 38px;
+                    font-weight: 700;
+                    color: white;
+                    vertical-alignment: bottom;
+                }
+                Text {
+                    text: root.days-str;
+                    font-size: 15px;
+                    font-weight: 600;
+                    color: rgba(255, 255, 255, 0.85);
+                    vertical-alignment: bottom;
+                }
+            }
+
+            // Row 3: Progress Bar
+            Rectangle {
+                height: 14px;
+                background: rgba(255, 255, 255, 0.1);
+                border-radius: 7px;
+                clip: true;
+
+                Rectangle {
+                    x: 0;
+                    width: parent.width * root.pct-val;
+                    height: 100%;
+                    background: @linear-gradient(90deg, #FFD200 0%, #FF9500 100%);
+                    border-radius: 7px;
+                }
+            }
+        }
+    }
+}
+
+export component DayProgressWidgetWindow inherits Window {
+    no-frame: true;
+    background: transparent;
+    always-on-top: false;
+    width: 320px;
+    height: 150px;
+    in-out property <string> instance-title: "Raven Day Progress Widget";
+    title: root.instance-title;
+
+    in-out property <string> date-str: "Jun 8";
+    in-out property <string> pct-str: "43.5%";
+    in-out property <float> pct-val: 0.435;
+    in-out property <string> hours-str: "10h 26m / 24h";
+    in-out property <bool> is-locked: true;
+    in-out property <float> bg-opacity: 0.96;
+    in-out property <int> border-radius-val: 24;
+
+    callback drag_window();
+    callback show_context_menu();
+    callback dummy_tracker();
+
+    Rectangle {
+        width: 100%;
+        height: 100%;
+        border-radius: root.border-radius-val * 1px;
+        background: @linear-gradient(145deg, rgba(22, 22, 26, root.bg-opacity * 0.82) 0%, rgba(5, 5, 8, root.bg-opacity * 0.88) 100%);
+        border-width: 1px;
+        border-color: rgba(255, 255, 255, 0.13);
+
+        Rectangle {
+            width: 100%;
+            height: 100%;
+            border-radius: parent.border-radius;
+            background: @linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.0) 35%);
+        }
+
+        TouchArea {
+            width: 100%;
+            height: 100%;
+            pointer-event(evt) => {
+                if evt.button == PointerEventButton.left && evt.kind == PointerEventKind.down {
+                    if !root.is-locked {
+                        root.drag_window();
+                    }
+                } else if evt.button == PointerEventButton.right && evt.kind == PointerEventKind.down {
+                    root.show_context_menu();
+                }
+            }
+        }
+
+        VerticalLayout {
+            padding: 24px;
+            spacing: 16px;
+
+            // Row 1: Clock + "Day Journey" | Date
+            HorizontalLayout {
+                alignment: space-between;
+                HorizontalLayout {
+                    spacing: 8px;
+                    alignment: start;
+                    Path {
+                        width: 16px;
+                        height: 16px;
+                        viewbox-width: 24;
+                        viewbox-height: 24;
+                        stroke: #00E5FF;
+                        stroke-width: 2.5px;
+                        stroke-line-cap: round;
+                        stroke-line-join: round;
+                        commands: "M12 8v4l3 3 M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z";
+                    }
+                    Text {
+                        text: "Day Journey";
+                        font-size: 14px;
+                        font-weight: 700;
+                        color: #00E5FF;
+                        vertical-alignment: center;
+                    }
+                }
+                Text {
+                    text: root.date-str;
+                    font-size: 13px;
+                    font-weight: 500;
+                    color: rgba(255, 255, 255, 0.6);
+                    vertical-alignment: center;
+                }
+            }
+
+            // Row 2: Large % | Hours Count
+            HorizontalLayout {
+                alignment: space-between;
+                Text {
+                    text: root.pct-str;
+                    font-size: 38px;
+                    font-weight: 700;
+                    color: white;
+                    vertical-alignment: bottom;
+                }
+                Text {
+                    text: root.hours-str;
+                    font-size: 15px;
+                    font-weight: 600;
+                    color: rgba(255, 255, 255, 0.85);
+                    vertical-alignment: bottom;
+                }
+            }
+
+            // Row 3: Progress Bar
+            Rectangle {
+                height: 14px;
+                background: rgba(255, 255, 255, 0.1);
+                border-radius: 7px;
+                clip: true;
+
+                Rectangle {
+                    x: 0;
+                    width: parent.width * root.pct-val;
+                    height: 100%;
+                    background: @linear-gradient(90deg, #00E5FF 0%, #0066FF 100%);
+                    border-radius: 7px;
+                }
+            }
+        }
+    }
+}
+
+export component MonthProgressWidgetWindow inherits Window {
+    no-frame: true;
+    background: transparent;
+    always-on-top: false;
+    width: 320px;
+    height: 150px;
+    in-out property <string> instance-title: "Raven Month Progress Widget";
+    title: root.instance-title;
+
+    in-out property <string> month-name: "June";
+    in-out property <string> pct-str: "43.5%";
+    in-out property <float> pct-val: 0.435;
+    in-out property <string> days-str: "13/30 Days";
+    in-out property <bool> is-locked: true;
+    in-out property <float> bg-opacity: 0.96;
+    in-out property <int> border-radius-val: 24;
+
+    callback drag_window();
+    callback show_context_menu();
+    callback dummy_tracker();
+
+    Rectangle {
+        width: 100%;
+        height: 100%;
+        border-radius: root.border-radius-val * 1px;
+        background: @linear-gradient(145deg, rgba(22, 22, 26, root.bg-opacity * 0.82) 0%, rgba(5, 5, 8, root.bg-opacity * 0.88) 100%);
+        border-width: 1px;
+        border-color: rgba(255, 255, 255, 0.13);
+
+        Rectangle {
+            width: 100%;
+            height: 100%;
+            border-radius: parent.border-radius;
+            background: @linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.0) 35%);
+        }
+
+        TouchArea {
+            width: 100%;
+            height: 100%;
+            pointer-event(evt) => {
+                if evt.button == PointerEventButton.left && evt.kind == PointerEventKind.down {
+                    if !root.is-locked {
+                        root.drag_window();
+                    }
+                } else if evt.button == PointerEventButton.right && evt.kind == PointerEventKind.down {
+                    root.show_context_menu();
+                }
+            }
+        }
+
+        VerticalLayout {
+            padding: 24px;
+            spacing: 16px;
+
+            // Row 1: Calendar + "Month Journey" | Month Name
+            HorizontalLayout {
+                alignment: space-between;
+                HorizontalLayout {
+                    spacing: 8px;
+                    alignment: start;
+                    Path {
+                        width: 16px;
+                        height: 16px;
+                        viewbox-width: 24;
+                        viewbox-height: 24;
+                        stroke: #FF2D55;
+                        stroke-width: 2.5px;
+                        stroke-line-cap: round;
+                        stroke-line-join: round;
+                        commands: "M19 4H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z M16 2v4 M8 2v4 M3 10h18";
+                    }
+                    Text {
+                        text: "Month Journey";
+                        font-weight: 700;
+                        color: #FF2D55;
+                        vertical-alignment: center;
+                    }
+                }
+                Text {
+                    text: root.month-name;
+                    font-size: 13px;
+                    font-weight: 500;
+                    color: rgba(255, 255, 255, 0.6);
+                    vertical-alignment: center;
+                }
+            }
+
+            // Row 2: Large % | Day Count
+            HorizontalLayout {
+                alignment: space-between;
+                Text {
+                    text: root.pct-str;
+                    font-size: 38px;
+                    font-weight: 700;
+                    color: white;
+                    vertical-alignment: bottom;
+                }
+                Text {
+                    text: root.days-str;
+                    font-size: 15px;
+                    font-weight: 600;
+                    color: rgba(255, 255, 255, 0.85);
+                    vertical-alignment: bottom;
+                }
+            }
+
+            // Row 3: Progress Bar
+            Rectangle {
+                height: 14px;
+                background: rgba(255, 255, 255, 0.1);
+                border-radius: 7px;
+                clip: true;
+
+                Rectangle {
+                    x: 0;
+                    width: parent.width * root.pct-val;
+                    height: 100%;
+                    background: @linear-gradient(90deg, #FF2D55 0%, #A000FF 100%);
+                    border-radius: 7px;
+                }
+            }
+        }
+    }
+}
+
+component MediaWidgetButton inherits Rectangle {
+    width: 44px;
+    height: 32px;
+    border-radius: 12px;
+    background: touch-area.has-hover ? rgba(255, 255, 255, 0.07) : rgba(255, 255, 255, 0.02);
+    border-width: 1px;
+    border-color: touch-area.has-hover ? rgba(255, 255, 255, 0.12) : rgba(255, 255, 255, 0.04);
+    
+    callback clicked();
+    
+    touch-area := TouchArea {
+        clicked => { root.clicked(); }
+    }
+}
+
+export component MediaWidgetWindow inherits Window {
+    no-frame: true;
+    background: transparent;
+    always-on-top: false;
+    width: 320px;
+    height: 150px;
+    in-out property <string> instance-title: "Raven Media Widget";
+    title: root.instance-title;
+
+    in-out property <string> track-title: "Not Playing";
+    in-out property <string> track-artist: "No Media";
+    in-out property <bool> is-playing: false;
+    in-out property <float> progress: 0.0;
+    in-out property <string> time-elapsed: "00:00";
+    in-out property <string> time-remaining: "-00:00";
+    in-out property <image> album-art;
+    in-out property <bool> has-album-art: false;
+    in-out property <image> app-icon;
+    in-out property <bool> has-app-icon: false;
+    in-out property <bool> is-locked: true;
+    in-out property <float> bg-opacity: 0.96;
+    in-out property <int> border-radius-val: 24;
+    in-out property <color> accent-color: #A000FF;
+
+    callback drag_window();
+    callback show_context_menu();
+    callback dummy_tracker();
+    callback skip_backward();
+    callback prev_track();
+    callback toggle_play();
+    callback next_track();
+    callback skip_forward();
+
+    Rectangle {
+        width: 100%;
+        height: 100%;
+        border-radius: root.border-radius-val * 1px;
+        background: @linear-gradient(145deg, rgba(22, 22, 26, root.bg-opacity * 0.82) 0%, rgba(5, 5, 8, root.bg-opacity * 0.88) 100%);
+        border-width: 1px;
+        border-color: rgba(255, 255, 255, 0.13);
+
+        Rectangle {
+            width: 100%;
+            height: 100%;
+            border-radius: parent.border-radius;
+            background: @linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.0) 35%);
+        }
+
+        TouchArea {
+            width: 100%;
+            height: 100%;
+            pointer-event(evt) => {
+                if evt.button == PointerEventButton.right && evt.kind == PointerEventKind.down {
+                    root.show_context_menu();
+                }
+            }
+        }
+
+        TouchArea {
+            width: 100%;
+            height: 84px;
+            pointer-event(evt) => {
+                if evt.button == PointerEventButton.left && evt.kind == PointerEventKind.down {
+                    if !root.is-locked {
+                        root.drag_window();
+                    }
+                }
+            }
+        }
+
+        VerticalLayout {
+            padding-left: 20px;
+            padding-right: 20px;
+            padding-top: 14px;
+            padding-bottom: 14px;
+            spacing: 10px;
+
+            // Row 1: Album Art + Track Info + App Icon
+            HorizontalLayout {
+                spacing: 12px;
+                alignment: start;
+                height: 54px;
+                
+                // Album Art Frame
+                Rectangle {
+                    width: 54px;
+                    height: 54px;
+                    border-radius: 12px;
+                    background: rgba(255, 255, 255, 0.05);
+                    clip: true;
+
+                    if root.has-album-art : Image {
+                        source: root.album-art;
+                        width: 100%;
+                        height: 100%;
+                        image-fit: cover;
+                    }
+                    
+                    if !root.has-album-art : Rectangle {
+                        width: 100%;
+                        height: 100%;
+                        background: @linear-gradient(135deg, #A000FF 0%, #FF2D55 100%);
+                        
+                        Path {
+                            width: 20px;
+                            height: 20px;
+                            viewbox-width: 24;
+                            viewbox-height: 24;
+                            stroke: white;
+                            stroke-width: 2px;
+                            commands: "M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V5h4V3h-6z";
+                        }
+                    }
+                }
+
+                // Track Info (Title and Artist)
+                VerticalLayout {
+                    horizontal-stretch: 1;
+                    alignment: center;
+                    spacing: 4px;
+
+                    Text {
+                        text: root.track-title;
+                        font-size: 14px;
+                        font-weight: 750;
+                        color: white;
+                        overflow: elide;
+                    }
+                    Text {
+                        text: root.track-artist;
+                        font-size: 11px;
+                        font-weight: 600;
+                        color: rgba(255, 255, 255, 0.6);
+                        overflow: elide;
+                    }
+                }
+
+                // App Icon Frame (e.g. Spotify/Chrome source badge)
+                if root.has-app-icon : Rectangle {
+                    width: 24px;
+                    height: 24px;
+                    border-radius: 12px;
+                    background: rgba(255, 255, 255, 0.05);
+                    clip: true;
+                    y: (parent.height - self.height) / 2;
+
+                    Image {
+                        source: root.app-icon;
+                        width: 100%;
+                        height: 100%;
+                        image-fit: contain;
+                    }
+                }
+            }
+
+            // Row 2: Progress Slider Bar
+            HorizontalLayout {
+                spacing: 8px;
+                height: 16px;
+
+                Text {
+                    text: root.time-elapsed;
+                    font-size: 10px;
+                    font-weight: 600;
+                    color: rgba(255, 255, 255, 0.4);
+                    vertical-alignment: center;
+                }
+
+                // Slider Track
+                Rectangle {
+                    horizontal-stretch: 1;
+                    height: 4px;
+                    background: rgba(255, 255, 255, 0.1);
+                    border-radius: 2px;
+                    y: (parent.height - self.height) / 2;
+
+                    // Progress fill
+                    Rectangle {
+                        x: 0;
+                        width: parent.width * root.progress;
+                        height: 100%;
+                        background: root.accent-color;
+                        border-radius: 2px;
+                    }
+                    
+                    // Thumb slider point representation
+                    Rectangle {
+                        x: (parent.width - self.width) * root.progress;
+                        width: 8px;
+                        height: 8px;
+                        border-radius: 4px;
+                        background: root.accent-color;
+                        y: -2px;
+                    }
+                }
+
+                Text {
+                    text: root.time-remaining;
+                    font-size: 10px;
+                    font-weight: 600;
+                    color: rgba(255, 255, 255, 0.4);
+                    vertical-alignment: center;
+                }
+            }
+
+            // Row 3: Control Buttons
+            HorizontalLayout {
+                alignment: space-between;
+                height: 38px;
+
+                // Skip Backward 10s Capsule
+                MediaWidgetButton {
+                    clicked => { root.skip_backward(); }
+                    
+                    Rectangle {
+                        width: 22px;
+                        height: 22px;
+                        
+                        Path {
+                            width: 100%;
+                            height: 100%;
+                            viewbox-width: 24;
+                            viewbox-height: 24;
+                            stroke: rgba(255, 255, 255, 0.75);
+                            stroke-width: 1.75px;
+                            stroke-line-cap: round;
+                            stroke-line-join: round;
+                            commands: "M 3 12 A 9 9 0 1 0 12 3 A 9.75 9.75 0 0 0 5.26 5.74 L 3 8 M 3 3 V 8 H 8";
+                        }
+                        
+                        Text {
+                            text: "10";
+                            font-size: 8px;
+                            font-weight: 800;
+                            color: rgba(255, 255, 255, 0.75);
+                            x: (parent.width - self.width) / 2;
+                            y: (parent.height - self.height) / 2 + 1px;
+                        }
+                    }
+                }
+
+                // Previous Track Button
+                MediaWidgetButton {
+                    clicked => { root.prev_track(); }
+                    
+                    Path {
+                        width: 12px;
+                        height: 12px;
+                        x: 16px;
+                        y: 10px;
+                        fill: rgba(255, 255, 255, 0.75);
+                        commands: "M 10 2 L 4.5 6 L 10 10 Z M 3.5 2 L 3.5 10 H 2 V 2 Z";
+                    }
+                }
+
+                // Play / Pause Button
+                MediaWidgetButton {
+                    clicked => { root.toggle_play(); }
+                    border-color: root.accent-color;
+                    
+                    if root.is-playing : Path {
+                        width: 10px;
+                        height: 10px;
+                        x: 17px;
+                        y: 11px;
+                        fill: white;
+                        commands: "M2 2h2v8H2zm4 0h2v8H6z";
+                    }
+
+                    if !root.is-playing : Path {
+                        width: 12px;
+                        height: 12px;
+                        x: 17px;
+                        y: 10px;
+                        fill: white;
+                        commands: "M 2.5 2 L 9.5 6 L 2.5 10 Z";
+                    }
+                }
+
+                // Next Track Capsule
+                MediaWidgetButton {
+                    clicked => { root.next_track(); }
+                    
+                    Path {
+                        width: 12px;
+                        height: 12px;
+                        x: 16px;
+                        y: 10px;
+                        fill: rgba(255, 255, 255, 0.75);
+                        commands: "M 2 2 L 7.5 6 L 2 10 Z M 8.5 2 L 8.5 10 H 10 L 10 2 Z";
+                    }
+                }
+
+                // Skip Forward 10s Capsule
+                MediaWidgetButton {
+                    clicked => { root.skip_forward(); }
+                    
+                    Rectangle {
+                        width: 22px;
+                        height: 22px;
+                        
+                        Path {
+                            width: 100%;
+                            height: 100%;
+                            viewbox-width: 24;
+                            viewbox-height: 24;
+                            stroke: rgba(255, 255, 255, 0.75);
+                            stroke-width: 1.75px;
+                            stroke-line-cap: round;
+                            stroke-line-join: round;
+                            commands: "M 21 12 A 9 9 0 1 1 12 3 A 9.75 9.75 0 0 1 18.74 5.74 L 21 8 M 21 3 V 8 H 16";
+                        }
+                        
+                        Text {
+                            text: "10";
+                            font-size: 8px;
+                            font-weight: 800;
+                            color: rgba(255, 255, 255, 0.75);
+                            x: (parent.width - self.width) / 2;
+                            y: (parent.height - self.height) / 2 + 1px;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+export component NotesWidgetWindow inherits Window {
+    no-frame: true;
+    background: transparent;
+    always-on-top: false;
+    width: 320px;
+    height: 150px;
+    in-out property <string> instance-title: "Raven Notes Widget";
+    title: root.instance-title;
+
+    in-out property <string> notes-text: "";
+    in-out property <bool> is-locked: true;
+    in-out property <float> bg-opacity: 0.96;
+    in-out property <int> border-radius-val: 24;
+
+    callback drag_window();
+    callback show_context_menu();
+    callback dummy_tracker();
+    callback notes_changed(string);
+
+    Rectangle {
+        width: 100%;
+        height: 100%;
+        border-radius: root.border-radius-val * 1px;
+        background: @linear-gradient(145deg, rgba(22, 22, 26, root.bg-opacity * 0.82) 0%, rgba(5, 5, 8, root.bg-opacity * 0.88) 100%);
+        border-width: 1px;
+        border-color: rgba(255, 255, 255, 0.13);
+
+        Rectangle {
+            width: 100%;
+            height: 100%;
+            border-radius: parent.border-radius;
+            background: @linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.0) 35%);
+        }
+
+        TouchArea {
+            width: 100%;
+            height: 100%;
+            pointer-event(evt) => {
+                if evt.button == PointerEventButton.right && evt.kind == PointerEventKind.down {
+                    root.show_context_menu();
+                }
+            }
+        }
+
+        TouchArea {
+            width: 100%;
+            height: 38px;
+            pointer-event(evt) => {
+                if evt.button == PointerEventButton.left && evt.kind == PointerEventKind.down {
+                    if !root.is-locked {
+                        root.drag_window();
+                    }
+                }
+            }
+        }
+
+        VerticalLayout {
+            padding-left: 20px;
+            padding-right: 20px;
+            padding-top: 14px;
+            padding-bottom: 14px;
+            spacing: 10px;
+
+            HorizontalLayout {
+                alignment: start;
+                spacing: 8px;
+                height: 18px;
+
+                Path {
+                    width: 14px;
+                    height: 14px;
+                    viewbox-width: 24;
+                    viewbox-height: 24;
+                    stroke: #FFCC00;
+                    stroke-width: 2.5px;
+                    stroke-line-cap: round;
+                    stroke-line-join: round;
+                    commands: "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z M14 2v6h6 M16 13H8 M16 17H8 M10 9H8";
+                    y: (parent.height - self.height) / 2;
+                }
+
+                Text {
+                    text: "Quick Notes";
+                    font-size: 13px;
+                    font-weight: 750;
+                    color: #FFCC00;
+                    vertical-alignment: center;
+                }
+            }
+
+            // Note Text Area
+            Rectangle {
+                background: rgba(255, 255, 255, 0.03);
+                border-radius: 8px;
+                border-width: 1px;
+                border-color: rgba(255, 255, 255, 0.06);
+                vertical-stretch: 1;
+                clip: true;
+
+                TextEdit {
+                    text: root.notes-text;
+                    font-size: 12px;
+                    wrap: word-wrap;
+                    edited(t) => { root.notes_changed(t); }
+                    width: 100%;
+                    height: 100%;
+                }
+            }
+        }
+    }
+}
+
+export struct TodoItem {
+    id: int,
+    text: string,
+    completed: bool,
+}
+
+export component TodoWidgetWindow inherits Window {
+    no-frame: true;
+    background: transparent;
+    always-on-top: false;
+    width: 320px;
+    height: 150px;
+    in-out property <string> instance-title: "Raven Todo Widget";
+    title: root.instance-title;
+
+    in-out property <[TodoItem]> todo-items;
+    in-out property <bool> is-locked: true;
+    in-out property <float> bg-opacity: 0.96;
+    in-out property <int> border-radius-val: 24;
+    in-out property <color> accent-color: #FF9500;
+    in-out property <bool> hide-completed: false;
+
+    callback drag_window();
+    callback show_context_menu();
+    callback dummy_tracker();
+    callback add_task(string);
+    callback toggle_task(int);
+    callback delete_task(int);
+    callback move_task(int, bool); // id, is_up
+
+    Rectangle {
+        width: 100%;
+        height: 100%;
+        border-radius: root.border-radius-val * 1px;
+        background: @linear-gradient(145deg, rgba(22, 22, 26, root.bg-opacity * 0.82) 0%, rgba(5, 5, 8, root.bg-opacity * 0.88) 100%);
+        border-width: 1px;
+        border-color: rgba(255, 255, 255, 0.13);
+
+        Rectangle {
+            width: 100%;
+            height: 100%;
+            border-radius: parent.border-radius;
+            background: @linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.0) 35%);
+        }
+
+        bg-touch := TouchArea {
+            width: 100%;
+            height: 100%;
+            pointer-event(evt) => {
+                if evt.button == PointerEventButton.left && evt.kind == PointerEventKind.down {
+                    if !root.is-locked {
+                        root.drag_window();
+                    }
+                } else if evt.button == PointerEventButton.right && evt.kind == PointerEventKind.down {
+                    root.show_context_menu();
+                }
+            }
+        }
+
+        TouchArea {
+            width: 100%;
+            height: 0px; visible: false;
+            pointer-event(evt) => {
+                if evt.button == PointerEventButton.left && evt.kind == PointerEventKind.down {
+                    if !root.is-locked {
+                        root.drag_window();
+                    }
+                }
+            }
+        }
+
+        VerticalLayout {
+            padding-left: 20px;
+            padding-right: 20px;
+            padding-top: 14px;
+            padding-bottom: 14px;
+            spacing: 6px;
+
+            // Row 1: Checklist Icon + "To-Do List"
+            HorizontalLayout {
+                alignment: start;
+                spacing: 8px;
+                height: 18px;
+
+                Path {
+                    width: 14px;
+                    height: 14px;
+                    viewbox-width: 24;
+                    viewbox-height: 24;
+                    stroke: root.accent-color;
+                    stroke-width: 2.5px;
+                    stroke-line-cap: round;
+                    stroke-line-join: round;
+                    commands: "M9 11l3 3L22 4 M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11";
+                    y: (parent.height - self.height) / 2;
+                }
+
+                Text {
+                    text: "To-Do List";
+                    font-size: 13px;
+                    font-weight: 750;
+                    color: root.accent-color;
+                    vertical-alignment: center;
+                }
+            }
+
+            // Scrollable task list
+            ScrollView {
+                vertical-stretch: 1;
+                
+                VerticalLayout {
+                    spacing: 4px;
+                    alignment: start;
+
+                    for item[idx] in root.todo-items : Rectangle {
+                        visible: !(root.hide-completed && item.completed);
+                        height: self.visible ? 26px : 0px;
+                        background: rgba(255, 255, 255, 0.02);
+                        border-radius: 6px;
+                        border-width: 1px;
+                        border-color: rgba(255, 255, 255, 0.04);
+                        
+                        HorizontalLayout {
+                            padding-left: 8px;
+                            padding-right: 8px;
+                            spacing: 8px;
+                            alignment: space-between;
+
+                            // Left: Checkbox + Text
+                            HorizontalLayout {
+                                spacing: 8px;
+                                alignment: start;
+                                vertical-stretch: 0;
+
+                                // Checkbox Button
+                                Rectangle {
+                                    width: 16px;
+                                    height: 16px;
+                                    border-radius: 4px;
+                                    border-width: 1.5px;
+                                    border-color: item.completed ? root.accent-color : rgba(255, 255, 255, 0.3);
+                                    background: item.completed ? root.accent-color : transparent;
+                                    y: (parent.height - self.height) / 2;
+
+                                    if item.completed : Path {
+                                        width: 8px;
+                                        height: 8px;
+                                        x: 4px;
+                                        y: 4px;
+                                        stroke: white;
+                                        stroke-width: 2px;
+                                        stroke-line-cap: round;
+                                        stroke-line-join: round;
+                                        commands: "M1.5 4.5l2 2 5-5";
+                                    }
+
+                                    TouchArea {
+                                        clicked => { root.toggle_task(item.id); }
+                                    }
+                                }
+
+                                // Task Description Text
+                                Text {
+                                    text: item.text;
+                                    font-size: 12px;
+                                    font-weight: 550;
+                                    color: item.completed ? rgba(255, 255, 255, 0.4) : white;
+                                    vertical-alignment: center;
+                                    horizontal-stretch: 1;
+                                }
+                            }
+
+                            HorizontalLayout {
+                                spacing: 4px;
+                                alignment: end;
+                                vertical-stretch: 0;
+
+                                // Move Up
+                                Rectangle {
+                                    width: 16px;
+                                    height: 16px;
+                                    border-radius: 4px;
+                                    background: up-touch.has-hover ? rgba(255,255,255,0.08) : transparent;
+                                    y: (parent.height - self.height) / 2;
+                                    
+                                    Path {
+                                        width: 8px;
+                                        height: 8px;
+                                        x: 4px;
+                                        y: 4px;
+                                        stroke: rgba(255, 255, 255, 0.6);
+                                        stroke-width: 1.5px;
+                                        stroke-line-cap: round;
+                                        stroke-line-join: round;
+                                        commands: "M 1 6 L 4 2 L 7 6";
+                                    }
+                                    
+                                    up-touch := TouchArea {
+                                        clicked => { root.move_task(item.id, true); }
+                                    }
+                                }
+
+                                // Move Down
+                                Rectangle {
+                                    width: 16px;
+                                    height: 16px;
+                                    border-radius: 4px;
+                                    background: down-touch.has-hover ? rgba(255,255,255,0.08) : transparent;
+                                    y: (parent.height - self.height) / 2;
+                                    
+                                    Path {
+                                        width: 8px;
+                                        height: 8px;
+                                        x: 4px;
+                                        y: 4px;
+                                        stroke: rgba(255, 255, 255, 0.6);
+                                        stroke-width: 1.5px;
+                                        stroke-line-cap: round;
+                                        stroke-line-join: round;
+                                        commands: "M 1 2 L 4 6 L 7 2";
+                                    }
+                                    
+                                    down-touch := TouchArea {
+                                        clicked => { root.move_task(item.id, false); }
+                                    }
+                                }
+
+                                // Delete Task
+                                Rectangle {
+                                    width: 16px;
+                                    height: 16px;
+                                    border-radius: 4px;
+                                    background: del-touch.has-hover ? rgba(255,69,58,0.15) : transparent;
+                                    y: (parent.height - self.height) / 2;
+                                    
+                                    Path {
+                                        width: 8px;
+                                        height: 8px;
+                                        x: 4px;
+                                        y: 4px;
+                                        stroke: del-touch.has-hover ? #FF453A : rgba(255, 255, 255, 0.6);
+                                        stroke-width: 1.5px;
+                                        stroke-line-cap: round;
+                                        commands: "M1 1l6 6 M7 1l-6 6";
+                                    }
+                                    
+                                    del-touch := TouchArea {
+                                        clicked => { root.delete_task(item.id); }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Bottom Add Task Input Row
+            HorizontalLayout {
+                spacing: (bg-touch.has-hover || todo-input.has-focus || root.todo-items.length == 0) ? 8px : 0px;
+                height: (bg-touch.has-hover || todo-input.has-focus || root.todo-items.length == 0) ? 26px : 0px;
+                visible: (bg-touch.has-hover || todo-input.has-focus || root.todo-items.length == 0);
+
+                Rectangle {
+                    background: rgba(255, 255, 255, 0.04);
+                    border-radius: 6px;
+                    border-width: 1px;
+                    border-color: rgba(255, 255, 255, 0.06);
+                    horizontal-stretch: 1;
+
+                    todo-input := TextInput {
+                        text: "";
+                        color: white;
+                        font-size: 12px;
+                        vertical-alignment: center;
+                        
+                        accepted => {
+                            if self.text != "" {
+                                root.add_task(self.text);
+                                self.text = "";
+                            }
+                        }
+                    }
+                }
+
+                // Add Task Button
+                Rectangle {
+                    width: 26px;
+                    height: 26px;
+                    border-radius: 6px;
+                    background: add-touch.has-hover ? rgba(255, 255, 255, 0.1) : rgba(255, 255, 255, 0.04);
+                    border-width: 1px;
+                    border-color: rgba(255, 255, 255, 0.08);
+
+                    Path {
+                        width: 10px;
+                        height: 10px;
+                        x: 8px;
+                        y: 8px;
+                        stroke: white;
+                        stroke-width: 2px;
+                        stroke-line-cap: round;
+                        commands: "M5 1v8 M1 5h8";
+                    }
+
+                    add-touch := TouchArea {
+                        clicked => {
+                            if todo-input.text != "" {
+                                root.add_task(todo-input.text);
+                                todo-input.text = "";
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+export component QuotesWidgetWindow inherits Window {
+    no-frame: true;
+    background: transparent;
+    always-on-top: false;
+    width: 320px;
+    height: 150px;
+    in-out property <string> instance-title: "Raven Quotes Widget";
+    title: root.instance-title;
+
+    in-out property <string> quote-text: "";
+    in-out property <string> quote-author: "";
+    in-out property <bool> is-locked: true;
+    in-out property <float> bg-opacity: 0.96;
+    in-out property <int> border-radius-val: 24;
+
+    callback drag_window();
+    callback show_context_menu();
+    callback dummy_tracker();
+    callback next_quote();
+
+    Rectangle {
+        width: 100%;
+        height: 100%;
+        border-radius: root.border-radius-val * 1px;
+        background: @linear-gradient(145deg, rgba(22, 22, 26, root.bg-opacity * 0.82) 0%, rgba(5, 5, 8, root.bg-opacity * 0.88) 100%);
+        border-width: 1px;
+        border-color: rgba(255, 255, 255, 0.13);
+
+        Rectangle {
+            width: 100%;
+            height: 100%;
+            border-radius: parent.border-radius;
+            background: @linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.0) 35%);
+        }
+
+        TouchArea {
+            width: 100%;
+            height: 100%;
+            pointer-event(evt) => {
+                if evt.button == PointerEventButton.left && evt.kind == PointerEventKind.down {
+                    if !root.is-locked {
+                        root.drag_window();
+                    }
+                } else if evt.button == PointerEventButton.right && evt.kind == PointerEventKind.down {
+                    root.show_context_menu();
+                }
+            }
+        }
+
+        TouchArea {
+            width: 100%;
+            height: 0px; visible: false;
+            pointer-event(evt) => {
+                if evt.button == PointerEventButton.left && evt.kind == PointerEventKind.down {
+                    if !root.is-locked {
+                        root.drag_window();
+                    }
+                }
+            }
+        }
+
+        VerticalLayout {
+            padding-left: 20px;
+            padding-right: 20px;
+            padding-top: 14px;
+            padding-bottom: 14px;
+            spacing: 6px;
+
+            HorizontalLayout {
+                alignment: start;
+                spacing: 8px;
+
+                Text {
+                    text: "“";
+                    font-size: 24px;
+                    font-weight: 950;
+                    color: #FF2D55;
+                    vertical-alignment: center;
+                }
+
+                Text {
+                    text: "Daily Wisdom";
+                    font-size: 13px;
+                    font-weight: 750;
+                    color: #FF2D55;
+                    vertical-alignment: center;
+                }
+            }
+
+            // Quote display area
+            VerticalLayout {
+                vertical-stretch: 1;
+                alignment: center;
+                spacing: 6px;
+
+                Text {
+                    text: root.quote-text;
+                    font-size: 13px;
+                    font-weight: 550;
+                    font-italic: true;
+                    color: white;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                    wrap: word-wrap;
+                }
+            }
+
+            // Bottom row: Manual Refresh (left) and Author (right)
+            HorizontalLayout {
+                alignment: space-between;
+                height: 18px;
+
+                // Refresh Button
+                Rectangle {
+                    width: 18px;
+                    height: 18px;
+                    border-radius: 9px;
+                    background: refresh-touch.has-hover ? rgba(255, 45, 85, 0.15) : transparent;
+                    
+                    Path {
+                        width: 10px;
+                        height: 10px;
+                        x: 4px;
+                        y: 4px;
+                        stroke: #FF2D55;
+                        stroke-width: 1.75px;
+                        stroke-line-cap: round;
+                        commands: "M 8.5 2 A 4.5 4.5 0 1 1 5 1.5 M 5 0 L 5 2 L 3 2";
+                    }
+
+                    refresh-touch := TouchArea {
+                        clicked => { root.next_quote(); }
+                    }
+                }
+
+                // Author Text
+                Text {
+                    text: "- " + root.quote-author;
+                    font-size: 10px;
+                    font-weight: 600;
+                    color: rgba(255, 255, 255, 0.5);
+                    vertical-alignment: center;
+                }
+            }
+        }
+    }
+}
+
+export component PictureWidgetWindow inherits Window {
+    no-frame: true;
+    background: transparent;
+    always-on-top: false;
+    width: 320px;
+    height: 150px;
+    in-out property <string> instance-title: "Raven Picture Widget";
+    title: root.instance-title;
+
+    in-out property <string> picture-path: "";
+    in-out property <image> picture-img;
+    in-out property <bool> has-picture: false;
+    in-out property <bool> is-locked: true;
+    in-out property <float> bg-opacity: 0.96;
+    in-out property <int> border-radius-val: 24;
+    in-out property <bool> show-camera-overlay: true;
+
+    callback drag_window();
+    callback show_context_menu();
+    callback dummy_tracker();
+    callback select_picture();
+
+    Rectangle {
+        width: 100%;
+        height: 100%;
+        border-radius: root.border-radius-val * 1px;
+        background: @linear-gradient(145deg, rgba(22, 22, 26, root.bg-opacity * 0.82) 0%, rgba(5, 5, 8, root.bg-opacity * 0.88) 100%);
+        border-width: 1px;
+        border-color: rgba(255, 255, 255, 0.13);
+
+        Rectangle {
+            width: 100%;
+            height: 100%;
+            border-radius: parent.border-radius;
+            background: @linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.0) 35%);
+        }
+
+        // Entire widget area is clickable to replace/pick photo or drag/right-click
+        // Entire widget area is clickable to replace/pick photo or drag/right-click
+        main-touch := TouchArea {
+            width: 100%;
+            height: 100%;
+            pointer-event(evt) => {
+                root.show-camera-overlay = true;
+                if evt.button == PointerEventButton.left && evt.kind == PointerEventKind.down {
+                    if !root.is-locked {
+                        // If no picture, check if click is inside the plus-touch bounds
+                        if !root.has-picture && self.pressed-x >= 80px && self.pressed-x <= 240px && self.pressed-y >= 35px && self.pressed-y <= 115px {
+                            root.select_picture();
+                        } else {
+                            root.drag_window();
+                        }
+                    } else {
+                        root.select_picture();
+                    }
+                } else if evt.button == PointerEventButton.right && evt.kind == PointerEventKind.down {
+                    root.show_context_menu();
+                }
+            }
+        }
+
+        // If picture is selected, show it
+        if root.has-picture : Rectangle {
+            width: 100%;
+            height: 100%;
+            border-radius: parent.border-radius;
+            clip: true;
+
+            Image {
+                source: root.picture-img;
+                width: 100%;
+                height: 100%;
+                image-fit: cover;
+            }
+
+            // Hover indicator overlay - bound to root touch area hover state to prevent event interception
+            Rectangle {
+                width: 100%;
+                height: 100%;
+                background: (main-touch.has-hover && root.show-camera-overlay && root.is-locked) ? rgba(0, 0, 0, 0.4) : transparent;
+
+                if (main-touch.has-hover && root.show-camera-overlay && root.is-locked) : Path {
+                    width: 24px;
+                    height: 24px;
+                    x: (parent.width - self.width) / 2;
+                    y: (parent.height - self.height) / 2;
+                    stroke: white;
+                    stroke-width: 2px;
+                    stroke-line-cap: round;
+                    stroke-line-join: round;
+                    commands: "M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z M12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z";
+                }
+            }
+        }
+
+        // If no picture, show plus placeholder in center
+        if !root.has-picture : Rectangle {
+            width: 100%;
+            height: 100%;
+
+            plus-touch := TouchArea {
+                width: 160px;
+                height: 80px;
+                x: (parent.width - self.width) / 2;
+                y: (parent.height - self.height) / 2;
+                clicked => {
+                    root.select_picture();
+                }
+            }
+
+            VerticalLayout {
+                alignment: center;
+                spacing: 8px;
+
+                HorizontalLayout {
+                    alignment: center;
+                    Rectangle {
+                        width: 32px;
+                        height: 32px;
+                        border-radius: 16px;
+                        background: plus-touch.has-hover ? rgba(255,255,255,0.18) : (main-touch.has-hover ? rgba(255,255,255,0.12) : rgba(255,255,255,0.06));
+
+                        Path {
+                            width: 14px;
+                            height: 14px;
+                            x: 9px;
+                            y: 9px;
+                            stroke: white;
+                            stroke-width: 2.5px;
+                            stroke-line-cap: round;
+                            commands: "M7 1v12 M1 7h12";
+                        }
+                    }
+                }
+
+                Text {
+                    text: "Click to select image";
+                    font-size: 11px;
+                    font-weight: 600;
+                    color: plus-touch.has-hover ? rgba(255, 255, 255, 0.7) : rgba(255, 255, 255, 0.4);
+                    horizontal-alignment: center;
+                }
+            }
+        }
+    }
+}
+
+export component VideoFrameWidgetWindow inherits Window {
+    no-frame: true;
+    background: transparent;
+    always-on-top: false;
+    width: 320px;
+    height: 150px;
+    in-out property <string> instance-title: "Raven Video Frame Widget";
+    title: root.instance-title;
+
+    in-out property <string> video-path: "";
+    in-out property <image> video-frame-img;
+    in-out property <bool> has-video: false;
+    in-out property <bool> is-gif: false;
+    in-out property <bool> is-locked: true;
+    in-out property <float> bg-opacity: 0.96;
+    in-out property <int> border-radius-val: 24;
+    in-out property <bool> show-video-overlay: true;
+
+    callback drag_window();
+    callback show_context_menu();
+    callback dummy_tracker();
+    callback select_video();
+
+    Rectangle {
+        width: 100%;
+        height: 100%;
+        border-radius: root.border-radius-val * 1px;
+        background: @linear-gradient(145deg, rgba(22, 22, 26, root.bg-opacity * 0.82) 0%, rgba(5, 5, 8, root.bg-opacity * 0.88) 100%);
+        border-width: 1px;
+        border-color: rgba(255, 255, 255, 0.13);
+        clip: true;
+
+        Rectangle {
+            width: 100%;
+            height: 100%;
+            border-radius: parent.border-radius;
+            background: @linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.0) 35%);
+        }
+
+        main-touch := TouchArea {
+            width: 100%;
+            height: 100%;
+            pointer-event(evt) => {
+                root.show-video-overlay = true;
+                if evt.button == PointerEventButton.left && evt.kind == PointerEventKind.down {
+                    if !root.is-locked {
+                        if !root.has-video && self.pressed-x >= 80px && self.pressed-x <= 240px && self.pressed-y >= 35px && self.pressed-y <= 115px {
+                            root.select_video();
+                        } else {
+                            root.drag_window();
+                        }
+                    } else {
+                        root.select_video();
+                    }
+                } else if evt.button == PointerEventButton.right && evt.kind == PointerEventKind.down {
+                    root.show_context_menu();
+                }
+            }
+        }
+
+        if root.has-video && root.is-gif : Rectangle {
+            width: 100%;
+            height: 100%;
+            border-radius: parent.border-radius;
+            clip: true;
+
+            Image {
+                source: root.video-frame-img;
+                width: 100%;
+                height: 100%;
+                image-fit: cover;
+            }
+        }
+
+        if root.has-video && !root.is-gif : Rectangle {
+            width: 100%;
+            height: 100%;
+
+            Rectangle {
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.10);
+            }
+
+            if (main-touch.has-hover && root.show-video-overlay && root.is-locked) : Rectangle {
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.35);
+
+                Path {
+                    width: 28px;
+                    height: 28px;
+                    x: (parent.width - self.width) / 2;
+                    y: (parent.height - self.height) / 2;
+                    fill: white;
+                    commands: "M8 5 L22 14 L8 23 Z";
+                }
+            }
+        }
+
+        if !root.has-video : Rectangle {
+            width: 100%;
+            height: 100%;
+
+            plus-touch := TouchArea {
+                width: 170px;
+                height: 84px;
+                x: (parent.width - self.width) / 2;
+                y: (parent.height - self.height) / 2;
+                clicked => {
+                    root.select_video();
+                }
+            }
+
+            VerticalLayout {
+                alignment: center;
+                spacing: 8px;
+
+                HorizontalLayout {
+                    alignment: center;
+                    Rectangle {
+                        width: 32px;
+                        height: 32px;
+                        border-radius: 16px;
+                        background: plus-touch.has-hover ? rgba(255,255,255,0.18) : (main-touch.has-hover ? rgba(255,255,255,0.12) : rgba(255,255,255,0.06));
+
+                        Path {
+                            width: 14px;
+                            height: 14px;
+                            x: 9px;
+                            y: 9px;
+                            stroke: white;
+                            stroke-width: 2.5px;
+                            stroke-line-cap: round;
+                            commands: "M7 1v12 M1 7h12";
+                        }
+                    }
+                }
+
+                Text {
+                    text: "Click to select GIF or video";
+                    font-size: 11px;
+                    font-weight: 600;
+                    color: plus-touch.has-hover ? rgba(255, 255, 255, 0.7) : rgba(255, 255, 255, 0.4);
+                    horizontal-alignment: center;
+                }
+            }
+        }
+    }
+}

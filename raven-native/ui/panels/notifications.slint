@@ -1,0 +1,102 @@
+import { SlintNotification } from "../types.slint";
+
+export component NotificationsPanel inherits VerticalLayout {
+    in property <[SlintNotification]> notifications;
+
+    spacing: 8px;
+    alignment: start;
+    height: 100%;
+
+    Text {
+        text: "RECENT NOTIFICATIONS";
+        font-size: 10px;
+        font-weight: 900;
+        color: rgba(255, 255, 255, 0.4);
+        letter-spacing: 1px;
+    }
+
+    if root.notifications.length > 0: Flickable {
+        height: 145px;
+        viewport-height: root.notifications.length * 52px;
+
+        VerticalLayout {
+            spacing: 6px;
+            for notification in root.notifications: Rectangle {
+                height: 46px;
+                background: rgba(255, 255, 255, 0.03);
+                border-radius: 10px;
+                border-width: 1px;
+                border-color: rgba(0, 215, 255, 0.15);
+
+                HorizontalLayout {
+                    padding-left: 12px;
+                    padding-right: 12px;
+                    spacing: 12px;
+
+                    Rectangle {
+                        width: 28px;
+                        height: 28px;
+                        border-radius: 6px;
+                        background: rgba(255, 255, 255, 0.08);
+                        y: (parent.height - self.height) / 2;
+
+                        Text {
+                            text: notification.avatar;
+                            font-size: 11px;
+                            font-weight: 900;
+                            color: white;
+                            vertical-alignment: center;
+                            horizontal-alignment: center;
+                        }
+                    }
+
+                    VerticalLayout {
+                        alignment: center;
+                        HorizontalLayout {
+                            alignment: space-between;
+                            Text {
+                                text: notification.app_name;
+                                font-size: 9px;
+                                font-weight: 900;
+                                color: rgba(255, 255, 255, 0.5);
+                            }
+                        }
+                        Text {
+                            text: notification.title;
+                            font-size: 12px;
+                            font-weight: 800;
+                            color: white;
+                            overflow: elide;
+                        }
+                        Text {
+                            text: notification.body;
+                            font-size: 10px;
+                            color: rgba(255, 255, 255, 0.4);
+                            overflow: elide;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if root.notifications.length == 0: VerticalLayout {
+        alignment: center;
+        spacing: 6px;
+        height: 145px;
+
+        Text {
+            text: "No active notifications";
+            font-size: 13px;
+            font-weight: 850;
+            color: rgba(255, 255, 255, 0.5);
+            horizontal-alignment: center;
+        }
+        Text {
+            text: "All quiet on the notification front";
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.3);
+            horizontal-alignment: center;
+        }
+    }
+}

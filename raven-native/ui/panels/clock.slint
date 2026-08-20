@@ -1,0 +1,1660 @@
+import { SlintFocusSession } from "../types.slint";
+import { ScrollView } from "std-widgets.slint";
+
+// clock.slint — Refined, premium, spatially balanced Clock Dashboard
+// Large analog clock, digital time, tabbed timer/stopwatch, and World Clock timezone list with mini analog clocks
+
+component MiniAnalogClock inherits Rectangle {
+    in property <int> hour;
+    in property <int> minute;
+    in property <int> second;
+
+    property <float> sec-deg: second * 6.0;
+    property <float> min-deg: minute * 6.0 + second * 0.1;
+    property <float> hr-deg: mod(hour, 12) * 30.0 + minute * 0.5;
+
+    width: 28px;
+    height: 28px;
+    border-radius: 14px;
+    background: @radial-gradient(circle, rgba(255,255,255,0.03) 0%, rgba(0,0,0,0.3) 100%);
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.15);
+
+    // Subtle crosshair indicators (12, 3, 6, 9)
+    Path {
+        x: 0; y: 0; width: 28px; height: 28px; viewbox-width: 28; viewbox-height: 28;
+        stroke: rgba(255, 255, 255, 0.12); stroke-width: 1px; fill: transparent;
+        commands: "M 14 1.5 L 14 4 M 26.5 14 L 24 14 M 14 26.5 L 14 24 M 1.5 14 L 4 14";
+    }
+
+    // Hour hand (thin, white, 6px length)
+    Path {
+        x: 0; y: 0; width: 28px; height: 28px; viewbox-width: 28; viewbox-height: 28;
+        stroke: white; stroke-width: 1.4px; fill: transparent;
+        commands: "M 14 14 L " + (14 + 6 * Math.sin(hr-deg * 1deg)) + " " + (14 - 6 * Math.cos(hr-deg * 1deg));
+    }
+
+    // Minute hand (thin, white, 9px length)
+    Path {
+        x: 0; y: 0; width: 28px; height: 28px; viewbox-width: 28; viewbox-height: 28;
+        stroke: white; stroke-width: 1.0px; fill: transparent;
+        commands: "M 14 14 L " + (14 + 9 * Math.sin(min-deg * 1deg)) + " " + (14 - 9 * Math.cos(min-deg * 1deg));
+    }
+
+    // Second hand (ultra-thin, orange, 10.5px length)
+    Path {
+        x: 0; y: 0; width: 28px; height: 28px; viewbox-width: 28; viewbox-height: 28;
+        stroke: #ffae00; stroke-width: 0.8px; fill: transparent;
+        commands: "M 14 14 L " + (14 + 10.5 * Math.sin(sec-deg * 1deg)) + " " + (14 - 10.5 * Math.cos(sec-deg * 1deg));
+    }
+
+    // Hub center pin
+    Rectangle {
+        x: 14px - 1.5px; y: 14px - 1.5px;
+        width: 3px; height: 3px;
+        border-radius: 1.5px;
+        background: #ffae00;
+        border-width: 0.5px;
+        border-color: white;
+    }
+}
+
+component TimerInputBox inherits Rectangle {
+    in-out property <string> text;
+    
+    width: 44px;
+    height: 30px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.1);
+    
+    TextInput {
+        width: 100%;
+        height: 100%;
+        text <=> root.text;
+        font-size: 16px;
+        font-weight: 700;
+        color: white;
+        horizontal-alignment: center;
+        vertical-alignment: center;
+    }
+}
+
+component CityRow inherits Rectangle {
+    in property <string> name;
+    in property <string> offset-str;
+    in property <string> time-str;
+    in property <string> ampm-str;
+    in property <string> date-str;
+    in property <int> hand-hour;
+    in property <int> hand-min;
+    in property <int> current-second;
+
+    callback right-clicked(length, length);
+
+    height: 40px;
+    width: 100%;
+
+    TouchArea {
+        width: 100%;
+        height: 100%;
+        pointer-event(evt) => {
+            if evt.button == PointerEventButton.right && evt.kind == PointerEventKind.down {
+                root.right-clicked(self.mouse-x + self.absolute-position.x, self.mouse-y + self.absolute-position.y);
+            }
+        }
+    }
+
+    HorizontalLayout {
+        spacing: 0px;
+        alignment: space-between;
+
+        HorizontalLayout {
+            spacing: 12px;
+
+            MiniAnalogClock {
+                hour: hand-hour;
+                minute: hand-min;
+                second: current-second;
+            }
+
+            VerticalLayout {
+                alignment: center;
+                spacing: 2px;
+
+                Text {
+                    text: name;
+                    font-size: 14px;
+                    font-weight: 700;
+                    color: #ffffff;
+                }
+                Text {
+                    text: offset-str;
+                    font-size: 10px;
+                    font-weight: 500;
+                    color: rgba(255, 255, 255, 0.4);
+                }
+            }
+        }
+
+        VerticalLayout {
+            alignment: center;
+            spacing: 2px;
+
+            HorizontalLayout {
+                alignment: end;
+                spacing: 3px;
+
+                Text {
+                    text: time-str;
+                    font-size: 14px;
+                    font-weight: 700;
+                    color: #ffffff;
+                }
+                Text {
+                    text: ampm-str;
+                    font-size: 9px;
+                    font-weight: 700;
+                    color: rgba(255, 255, 255, 0.6);
+                    vertical-alignment: bottom;
+                }
+            }
+
+            Text {
+                text: date-str;
+                font-size: 10px;
+                font-weight: 500;
+                color: rgba(255, 255, 255, 0.4);
+                horizontal-alignment: right;
+            }
+        }
+    }
+}
+
+export component MinimalClockPanel inherits Rectangle {
+    in property <string> timer-remaining-str: "00:25:30";
+    in property <bool>   timer-running: false;
+    in property <string> stopwatch-str: "00:00.00";
+    in property <bool>   stopwatch-running: false;
+    in property <bool> premium-locked: false;
+
+    // Live clock properties
+    in property <int> current-hour: 12;
+    in property <int> current-minute: 0;
+    in property <int> current-second: 0;
+    in property <string> current-ampm: "AM";
+    in property <string> current-time-str: "12:00";
+    in property <string> current-second-str: "00";
+
+    in-out property <bool> show-timer-input-panel: false;
+    in-out property <string> input-h: "0";
+    in-out property <string> input-m: "25";
+    in-out property <string> input-s: "30";
+
+    callback timer-toggle();
+    callback timer-reset();
+    callback stopwatch-toggle();
+    callback stopwatch-reset();
+    callback timer-text-clicked();
+    callback set-timer-from-input();
+    callback close-timer-input-panel();
+    callback buy-license();
+
+    // System-synchronized clock hands
+    property <float> sec-deg: current-second * 6.0;
+    property <float> min-deg: current-minute * 6.0 + current-second * 0.1;
+    property <float> hr-deg: mod(current-hour, 12) * 30.0 + current-minute * 0.5;
+
+    property <string> active-pane: "timer";
+
+    width: 344px;
+    height: 154px;
+    background: transparent;
+    border-width: 0px;
+
+    HorizontalLayout {
+        padding-left: 0px;
+        padding-right: 0px;
+        spacing: 24px;
+        alignment: center;
+
+        // COLUMN 1 — Large Analog Clock (154×154)
+        Rectangle {
+            width: 154px;
+            height: 154px;
+
+            Rectangle {
+                x: 0px; y: 0px;
+                width: 154px; height: 154px;
+                border-radius: 77px;
+                background: @radial-gradient(circle, rgba(255,255,255,0.03) 0%, rgba(0,0,0,0.18) 100%);
+                border-width: 1px; border-color: rgba(255,255,255,0.08);
+                drop-shadow-blur: 24px; drop-shadow-color: rgba(0,0,0,0.3); drop-shadow-offset-y: 12px;
+
+                // 12 hour tick marks (mathematically perfect)
+                Path { x:0;y:0;width:154px;height:154px;viewbox-width:154;viewbox-height:154;stroke:rgba(255,255,255,0.82);stroke-width:2.2px;fill:transparent;
+                    commands: "M 77 6 L 77 17 " +
+                              "M 112.50 15.51 L 107.00 25.04 " +
+                              "M 138.49 41.50 L 128.96 47.00 " +
+                              "M 148 77 L 137 77 " +
+                              "M 138.49 112.50 L 128.96 107.00 " +
+                              "M 112.50 138.49 L 107.00 128.96 " +
+                              "M 77 148 L 77 137 " +
+                              "M 41.50 138.49 L 47.00 128.96 " +
+                              "M 15.51 112.50 L 25.04 107.00 " +
+                              "M 6 77 L 17 77 " +
+                              "M 15.51 41.50 L 25.04 47.00 " +
+                              "M 41.50 15.51 L 47.00 25.04";
+                }
+
+                // Minute ticks (mathematically perfect, dim, shorter)
+                Path { x:0;y:0;width:154px;height:154px;viewbox-width:154;viewbox-height:154;stroke:rgba(255,255,255,0.28);stroke-width:1px;fill:transparent;
+                    commands: "M 84.32 7.38 L 83.79 12.36 M 91.55 8.53 L 90.51 13.42 M 98.63 10.43 L 97.09 15.18 M 105.47 13.05 L 103.44 17.62 M 118.14 20.37 L 115.21 24.41 M 123.84 24.98 L 120.49 28.70 M 129.02 30.16 L 125.30 33.51 M 133.63 35.86 L 129.59 38.79 M 140.95 48.53 L 136.38 50.56 M 143.57 55.37 L 138.82 56.91 M 145.47 62.45 L 140.58 63.49 M 146.62 69.68 L 141.64 70.21 M 146.62 84.32 L 141.64 83.79 M 145.47 91.55 L 140.58 90.51 M 143.57 98.63 L 138.82 97.09 M 140.95 105.47 L 136.38 103.44 M 133.63 118.14 L 129.59 115.21 M 129.02 123.84 L 125.30 120.49 M 123.84 129.02 L 120.49 125.30 M 118.14 133.63 L 115.21 129.59 M 105.47 140.95 L 103.44 136.38 M 98.63 143.57 L 97.09 138.82 M 91.55 145.47 L 90.51 140.58 M 84.32 146.62 L 83.79 141.64 M 69.68 146.62 L 70.21 141.64 M 62.45 145.47 L 63.49 140.58 M 55.37 143.57 L 56.91 138.82 M 48.53 140.95 L 50.56 136.38 M 35.86 133.63 L 38.79 129.59 M 30.16 129.02 L 33.51 125.30 M 24.98 123.84 L 28.70 120.49 M 20.37 118.14 L 24.41 115.21 M 13.05 105.47 L 17.62 103.44 M 10.43 98.63 L 15.18 97.09 M 8.53 91.55 L 13.42 90.51 M 7.38 84.32 L 12.36 83.79 M 7.38 69.68 L 12.36 70.21 M 8.53 62.45 L 13.42 63.49 M 10.43 55.37 L 15.18 56.91 M 13.05 48.53 L 17.62 50.56 M 20.37 35.86 L 24.41 38.79 M 24.98 30.16 L 28.70 33.51 M 30.16 24.98 L 33.51 28.70 M 35.86 20.37 L 38.79 24.41 M 48.53 13.05 L 50.56 17.62 M 55.37 10.43 L 56.91 15.18 M 62.45 8.53 L 63.49 13.42 M 69.68 7.38 L 70.21 12.36"; }
+
+                // Numbers 12 / 3 / 6 / 9 (refined font size for elegance)
+                Text { text:"12"; font-size:16px; font-weight:760; color:rgba(255,255,255,0.92); x:77px - self.width/2; y:25px; }
+                Text { text:"3";  font-size:16px; font-weight:760; color:rgba(255,255,255,0.92); x:154px - 25px - self.width; y:77px - self.height/2; }
+                Text { text:"6";  font-size:16px; font-weight:760; color:rgba(255,255,255,0.92); x:77px - self.width/2; y:154px - 25px - self.height; }
+                Text { text:"9";  font-size:16px; font-weight:760; color:rgba(255,255,255,0.92); x:25px; y:77px - self.height/2; }
+
+                // Hour hand (sleeker 3.5px, 44px, white)
+                Path {
+                    x:0; y:0; width:154px; height:154px; viewbox-width:154; viewbox-height:154;
+                    stroke:white; stroke-width:3.5px; fill:transparent;
+                    commands: "M 77 77 L " + (77 + 44 * Math.sin(root.hr-deg * 1deg)) + " " + (77 - 44 * Math.cos(root.hr-deg * 1deg));
+                }
+                // Minute hand (2.2px, 58px, white)
+                Path {
+                    x:0; y:0; width:154px; height:154px; viewbox-width:154; viewbox-height:154;
+                    stroke:white; stroke-width:2.2px; fill:transparent;
+                    commands: "M 77 77 L " + (77 + 58 * Math.sin(root.min-deg * 1deg)) + " " + (77 - 58 * Math.cos(root.min-deg * 1deg));
+                }
+                // Second hand (1.2px, 66px, orange)
+                Path {
+                    x:0; y:0; width:154px; height:154px; viewbox-width:154; viewbox-height:154;
+                    stroke:#ffae00; stroke-width:1.2px; fill:transparent;
+                    commands: "M 77 77 L " + (77 + 66 * Math.sin(root.sec-deg * 1deg)) + " " + (77 - 66 * Math.cos(root.sec-deg * 1deg));
+                }
+
+                // Hub: 9×9 orange center pin with white border
+                Rectangle { x:77px - 4.5px; y:77px - 4.5px; width:9px; height:9px; border-radius:4.5px; background:#ffae00; border-width:2px; border-color:white; }
+            }
+        }
+
+        // COLUMN 2 — Center (digital time + timer controls)
+        VerticalLayout {
+            width: 154px;
+            height: 100%;
+            alignment: center;
+            spacing: 0px;
+            opacity: root.premium-locked ? 0.28 : 1.0;
+
+            HorizontalLayout {
+                alignment: start; spacing: 6px; height: 44px;
+                Text { text: root.current-time-str; font-size:42px; font-weight:500; color:white; vertical-alignment:center; }
+                VerticalLayout {
+                    alignment: center; spacing: 1px;
+                    Text { text: root.current-ampm; font-size:10px; font-weight:700; color:rgba(255,255,255,0.45); }
+                    Text { text: root.current-second-str; font-size:16px; font-weight:400; color:white; }
+                }
+            }
+
+            Rectangle { height:4px; width:100%; }
+            Rectangle { height:4px; width:100%; }
+            Rectangle { width:100%; height:1px; background:rgba(255,255,255,0.08); }
+            Rectangle { height:12px; width:100%; }
+
+            Rectangle {
+                width: 100%;
+                height: 32px;
+                
+                Text { width:100%; height:100%; text:root.timer-remaining-str; font-size:32px; font-weight:400; color:white; letter-spacing: 0.5px; font-family: "Consolas"; }
+
+                TouchArea {
+                    enabled: !root.premium-locked;
+                    width: 100%;
+                    height: 100%;
+                    mouse-cursor: pointer;
+                    clicked => {
+                        root.timer-text-clicked();
+                    }
+                }
+            }
+
+            Rectangle { height:6px; width:100%; }
+
+            HorizontalLayout {
+                alignment:center; spacing:14px; height:42px;
+
+                // Reset
+                VerticalLayout { alignment:center;
+                    reset-area := TouchArea {
+                        enabled: !root.premium-locked;
+                        width:32px; height:32px;
+                        mouse-cursor: pointer;
+                        clicked => { root.timer-reset(); }
+                        Rectangle {
+                            width: reset-area.has-hover ? 36px : 32px;
+                            height: reset-area.has-hover ? 36px : 32px;
+                            x: (parent.width - self.width) / 2;
+                            y: (parent.height - self.height) / 2;
+                            border-radius: self.width / 2;
+                            background: reset-area.has-hover ? rgba(255,255,255,0.1) : rgba(255,255,255,0.05);
+                            border-width:1px; border-color: reset-area.has-hover ? rgba(255,255,255,0.15) : rgba(255,255,255,0.08);
+                            drop-shadow-blur:24px; drop-shadow-color:rgba(0,0,0,0.34); drop-shadow-offset-y:10px;
+                            
+                            animate width, height, background, border-color { duration: 150ms; easing: cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+                            Path {
+                                x: (parent.width - self.width) / 2;
+                                y: (parent.height - self.height) / 2;
+                                width: reset-area.has-hover ? 18px : 16px;
+                                height: reset-area.has-hover ? 18px : 16px;
+                                viewbox-width:24; viewbox-height:24;
+                                stroke:rgba(255,255,255,0.9); stroke-width:2.3px; fill:transparent;
+                                commands:"M21 12a9 9 0 1 1-2.64-6.36 M21 3v6h-6";
+                                animate width, height { duration: 150ms; easing: cubic-bezier(0.34, 1.56, 0.64, 1); }
+                            }
+                        }
+                    }
+                }
+
+                // Play/Pause
+                VerticalLayout { alignment:center;
+                    play-area := TouchArea {
+                        enabled: !root.premium-locked;
+                        width:42px; height:42px;
+                        mouse-cursor: pointer;
+                        clicked => { root.timer-toggle(); }
+                        Rectangle {
+                            width: play-area.has-hover ? 46px : 42px;
+                            height: play-area.has-hover ? 46px : 42px;
+                            x: (parent.width - self.width) / 2;
+                            y: (parent.height - self.height) / 2;
+                            border-radius: self.width / 2;
+                            background:rgba(8,8,8,0.94);
+                            border-width:1.5px; border-color: play-area.has-hover ? #ffc04d : rgba(255,174,0,0.9);
+                            drop-shadow-blur:24px; drop-shadow-color:rgba(255,174,0,0.2);
+                            
+                            animate width, height, border-color { duration: 150ms; easing: cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+                            Rectangle { x:0;y:0;width:100%;height:100%;border-radius:parent.border-radius;
+                                background:@radial-gradient(circle, rgba(255,174,0,0.18) 0%, transparent 64%); }
+                            property <bool> ia: root.timer-running;
+                            if !self.ia: Path {
+                                x: (parent.width - self.width) / 2 + 1.5px;
+                                y: (parent.height - self.height) / 2;
+                                width: play-area.has-hover ? 22px : 20px;
+                                height: play-area.has-hover ? 22px : 20px;
+                                viewbox-width:24;viewbox-height:24;fill:#ffae00;commands:"M8 5.25v13.5L18.7 12 8 5.25Z";
+                                animate width, height { duration: 150ms; easing: cubic-bezier(0.34, 1.56, 0.64, 1); }
+                            }
+                            if self.ia: Path {
+                                x: (parent.width - self.width) / 2;
+                                y: (parent.height - self.height) / 2;
+                                width: play-area.has-hover ? 22px : 20px;
+                                height: play-area.has-hover ? 22px : 20px;
+                                viewbox-width:24;viewbox-height:24;fill:#ffae00;commands:"M6.5 5h4.2v14H6.5V5Zm6.8 0h4.2v14h-4.2V5Z";
+                                animate width, height { duration: 150ms; easing: cubic-bezier(0.34, 1.56, 0.64, 1); }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if root.premium-locked: Rectangle {
+        x: 160px;
+        y: 12px;
+        width: 178px;
+        height: 130px;
+        border-radius: 18px;
+        background: rgba(5, 6, 6, 0.82);
+        border-width: 1px;
+        border-color: rgba(52, 199, 89, 0.30);
+
+        VerticalLayout {
+            padding-left: 14px;
+            padding-right: 14px;
+            spacing: 7px;
+            alignment: center;
+
+            Text { text: "Trial period over"; font-size: 14px; font-weight: 900; color: white; horizontal-alignment: center; }
+            Text { text: "Focus timer is premium. Buy Raven Notch to unlock it."; font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.58); horizontal-alignment: center; wrap: word-wrap; }
+            Rectangle {
+                width: 82px;
+                height: 28px;
+                border-radius: 14px;
+                background: #34C759;
+                Text { text: "Buy Now"; font-size: 10px; font-weight: 900; color: #061008; horizontal-alignment: center; vertical-alignment: center; }
+                TouchArea { mouse-cursor: pointer; clicked => { root.buy-license(); } }
+            }
+        }
+    }
+
+    if root.show-timer-input-panel: Rectangle {
+        x: 160px;
+        y: 10px;
+        width: 180px;
+        height: 134px;
+        background: rgba(18, 18, 18, 0.98);
+        border-radius: 12px;
+        border-width: 1px;
+        border-color: rgba(255, 255, 255, 0.08);
+        drop-shadow-blur: 16px;
+        drop-shadow-color: rgba(0, 0, 0, 0.6);
+        
+        Text {
+            text: "SET TIMER";
+            font-size: 10px;
+            font-weight: 800;
+            color: rgba(255, 255, 255, 0.8);
+            x: 12px;
+            y: 10px;
+        }
+
+        HorizontalLayout {
+            x: 12px;
+            y: 28px;
+            width: 156px;
+            spacing: 8px;
+            
+            // Hours
+            VerticalLayout {
+                spacing: 2px;
+                alignment: start;
+                Text { text: "H"; font-size: 9px; font-weight: 800; color: rgba(255,255,255,0.4); horizontal-alignment: center; }
+                TimerInputBox {
+                    text <=> root.input-h;
+                }
+            }
+            
+            // Minutes
+            VerticalLayout {
+                spacing: 2px;
+                alignment: start;
+                Text { text: "M"; font-size: 9px; font-weight: 800; color: rgba(255,255,255,0.4); horizontal-alignment: center; }
+                TimerInputBox {
+                    text <=> root.input-m;
+                }
+            }
+            
+            // Seconds
+            VerticalLayout {
+                spacing: 2px;
+                alignment: start;
+                Text { text: "S"; font-size: 9px; font-weight: 800; color: rgba(255,255,255,0.4); horizontal-alignment: center; }
+                TimerInputBox {
+                    text <=> root.input-s;
+                }
+            }
+        }
+
+        HorizontalLayout {
+            x: 12px;
+            y: 92px;
+            width: 156px;
+            spacing: 8px;
+            alignment: end;
+            
+            // Cancel button
+            TouchArea {
+                width: 74px;
+                height: 28px;
+                clicked => {
+                    root.show-timer-input-panel = false;
+                    root.close-timer-input-panel();
+                }
+                Rectangle {
+                    width: 100%;
+                    height: 100%;
+                    border-radius: 14px;
+                    background: rgba(255, 255, 255, 0.08);
+                    Text {
+                        text: "CANCEL";
+                        font-size: 9px;
+                        font-weight: 800;
+                        color: white;
+                        horizontal-alignment: center;
+                        vertical-alignment: center;
+                    }
+                }
+            }
+            
+            // Set button
+            TouchArea {
+                width: 58px;
+                height: 28px;
+                clicked => {
+                    root.set-timer-from-input();
+                }
+                Rectangle {
+                    width: 100%;
+                    height: 100%;
+                    border-radius: 14px;
+                    background: #ffae00;
+                    Text {
+                        text: "SET";
+                        font-size: 9px;
+                        font-weight: 800;
+                        color: black;
+                        horizontal-alignment: center;
+                        vertical-alignment: center;
+                    }
+                }
+            }
+        }
+    }
+}
+
+export component WorldClockPanel inherits Rectangle {
+    // World clock properties
+    in property <string> ny-time-str: "07:57";
+    in property <string> ny-ampm-str: "PM";
+    in property <string> ny-date-str: "May 21";
+    in property <int> ny-hand-hour: 7;
+    in property <int> ny-hand-min: 57;
+    in property <string> ny-offset-str: "UTC -4";
+
+    in property <string> ldn-time-str: "12:57";
+    in property <string> ldn-ampm-str: "AM";
+    in property <string> ldn-date-str: "May 22";
+    in property <int> ldn-hand-hour: 12;
+    in property <int> ldn-hand-min: 57;
+    in property <string> ldn-offset-str: "UTC +1";
+
+    in property <string> tky-time-str: "08:57";
+    in property <string> tky-ampm-str: "AM";
+    in property <string> tky-date-str: "May 22";
+    in property <int> tky-hand-hour: 8;
+    in property <int> tky-hand-min: 57;
+    in property <string> tky-offset-str: "UTC +9";
+
+    in property <string> del-time-str: "05:30";
+    in property <string> del-ampm-str: "PM";
+    in property <string> del-date-str: "May 22";
+    in property <int> del-hand-hour: 5;
+    in property <int> del-hand-min: 30;
+    in property <string> del-offset-str: "UTC +5:30";
+
+    in property <string> syd-time-str: "10:00";
+    in property <string> syd-ampm-str: "PM";
+    in property <string> syd-date-str: "May 22";
+    in property <int> syd-hand-hour: 10;
+    in property <int> syd-hand-min: 0;
+    in property <string> syd-offset-str: "UTC +10";
+
+    in property <string> par-time-str: "01:00";
+    in property <string> par-ampm-str: "PM";
+    in property <string> par-date-str: "May 22";
+    in property <int> par-hand-hour: 1;
+    in property <int> par-hand-min: 0;
+    in property <string> par-offset-str: "UTC +1";
+
+    in property <string> dxb-time-str: "04:00";
+    in property <string> dxb-ampm-str: "PM";
+    in property <string> dxb-date-str: "May 22";
+    in property <int> dxb-hand-hour: 4;
+    in property <int> dxb-hand-min: 0;
+    in property <string> dxb-offset-str: "UTC +4";
+
+    in property <string> sin-time-str: "08:00";
+    in property <string> sin-ampm-str: "PM";
+    in property <string> sin-date-str: "May 22";
+    in property <int> sin-hand-hour: 8;
+    in property <int> sin-hand-min: 0;
+    in property <string> sin-offset-str: "UTC +8";
+
+    in property <int> current-second;
+
+    in-out property <bool> show-ny: true;
+    in-out property <bool> show-ldn: true;
+    in-out property <bool> show-tky: true;
+    in-out property <bool> show-del: false;
+    in-out property <bool> show-syd: false;
+    in-out property <bool> show-par: false;
+    in-out property <bool> show-dxb: false;
+    in-out property <bool> show-sin: false;
+
+    callback row-right-clicked(string, length, length);
+    callback add-clicked(length, length);
+    callback focus-clicked();
+
+    width: 260px;
+    height: 154px;
+    background: transparent;
+    border-width: 0px;
+
+    VerticalLayout {
+        padding-left: 0px;
+        padding-right: 0px;
+        padding-top: 0px;
+        padding-bottom: 0px;
+        spacing: 0px;
+
+        // Header Row
+        HorizontalLayout {
+            height: 19px; alignment: space-between;
+            HorizontalLayout { spacing: 8px; alignment: center;
+                Path { width: 14px; height: 14px; viewbox-width: 24; viewbox-height: 24; stroke: rgba(255, 255, 255, 0.6); stroke-width: 2px; fill: transparent;
+                    commands: "M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z M2 12h20 M12 2a15.3 15.3 0 0 1 0 20 M12 2a15.3 15.3 0 0 0 0 20"; }
+                Text { text: "WORLD CLOCK"; font-size: 10px; font-weight: 800; letter-spacing: 0.8px; color: rgba(255, 255, 255, 0.6); vertical-alignment: center; }
+            }
+            HorizontalLayout {
+                spacing: 8px;
+                alignment: center;
+                focus-btn := TouchArea {
+                    width: 20px;
+                    height: 20px;
+                    mouse-cursor: pointer;
+                    clicked => {
+                        root.focus-clicked();
+                    }
+                    
+                    Image {
+                        source: @image-url("../assets/focus.png");
+                        width: focus-btn.has-hover ? 18px : 14px;
+                        height: focus-btn.has-hover ? 18px : 14px;
+                        x: (parent.width - self.width)/2;
+                        y: (parent.height - self.height)/2;
+                        
+                        animate width, height { duration: 150ms; easing: cubic-bezier(0.34, 1.56, 0.64, 1); }
+                    }
+
+                    Rectangle {
+                        x: (parent.width - self.width)/2;
+                        y: focus-btn.has-hover ? -22px : -15px;
+                        opacity: focus-btn.has-hover ? 1.0 : 0.0;
+                        height: 18px;
+                        background: #1C1C1E;
+                        border-radius: 4px;
+                        border-width: 1px;
+                        border-color: rgba(255, 255, 255, 0.15);
+                        padding-left: 6px;
+                        padding-right: 6px;
+                        
+                        animate y, opacity { duration: 120ms; easing: ease-out; }
+                        
+                        Text {
+                            text: "Focus";
+                            font-size: 9px;
+                            font-weight: 700;
+                            color: white;
+                            vertical-alignment: center;
+                            horizontal-alignment: center;
+                        }
+                    }
+                }
+                TouchArea {
+                    width: 20px;
+                    height: 20px;
+                    pointer-event(evt) => {
+                        if evt.kind == PointerEventKind.down {
+                            root.add-clicked(self.mouse-x + self.absolute-position.x, self.mouse-y + self.absolute-position.y);
+                        }
+                    }
+                    Text { text: "+"; font-size: 16px; font-weight: 300; color: rgba(255, 255, 255, 0.8); vertical-alignment: center; horizontal-alignment: center; }
+                }
+            }
+        }
+
+        Rectangle { height: 2px; }
+        Rectangle { width: 100%; height: 1px; background: rgba(255, 255, 255, 0.08); }
+        Rectangle { height: 2px; }
+
+        Flickable {
+            width: 100%;
+            height: 130px;
+            viewport-height: city-rows-layout.min-height;
+            interactive: true;
+
+            city-rows-layout := VerticalLayout {
+                spacing: 0px;
+                alignment: start;
+
+                // New York Row
+                if root.show-ny: CityRow {
+                    name: "New York";
+                    offset-str: root.ny-offset-str;
+                    time-str: root.ny-time-str;
+                    ampm-str: root.ny-ampm-str;
+                    date-str: root.ny-date-str;
+                    hand-hour: root.ny-hand-hour;
+                    hand-min: root.ny-hand-min;
+                    current-second: root.current-second;
+                    right-clicked(x, y) => {
+                        root.row-right-clicked("NY", x, y);
+                    }
+                }
+                if root.show-ny: Rectangle { height: 1px; background: rgba(255, 255, 255, 0.05); }
+
+                // London Row
+                if root.show-ldn: CityRow {
+                    name: "London";
+                    offset-str: root.ldn-offset-str;
+                    time-str: root.ldn-time-str;
+                    ampm-str: root.ldn-ampm-str;
+                    date-str: root.ldn-date-str;
+                    hand-hour: root.ldn-hand-hour;
+                    hand-min: root.ldn-hand-min;
+                    current-second: root.current-second;
+                    right-clicked(x, y) => {
+                        root.row-right-clicked("LDN", x, y);
+                    }
+                }
+                if root.show-ldn: Rectangle { height: 1px; background: rgba(255, 255, 255, 0.05); }
+
+                // Tokyo Row
+                if root.show-tky: CityRow {
+                    name: "Tokyo";
+                    offset-str: root.tky-offset-str;
+                    time-str: root.tky-time-str;
+                    ampm-str: root.tky-ampm-str;
+                    date-str: root.tky-date-str;
+                    hand-hour: root.tky-hand-hour;
+                    hand-min: root.tky-hand-min;
+                    current-second: root.current-second;
+                    right-clicked(x, y) => {
+                        root.row-right-clicked("TKY", x, y);
+                    }
+                }
+                if root.show-tky: Rectangle { height: 1px; background: rgba(255, 255, 255, 0.05); }
+
+                // New Delhi Row
+                if root.show-del: CityRow {
+                    name: "New Delhi";
+                    offset-str: root.del-offset-str;
+                    time-str: root.del-time-str;
+                    ampm-str: root.del-ampm-str;
+                    date-str: root.del-date-str;
+                    hand-hour: root.del-hand-hour;
+                    hand-min: root.del-hand-min;
+                    current-second: root.current-second;
+                    right-clicked(x, y) => {
+                        root.row-right-clicked("DEL", x, y);
+                    }
+                }
+                if root.show-del: Rectangle { height: 1px; background: rgba(255, 255, 255, 0.05); }
+
+                // Sydney Row
+                if root.show-syd: CityRow {
+                    name: "Sydney";
+                    offset-str: root.syd-offset-str;
+                    time-str: root.syd-time-str;
+                    ampm-str: root.syd-ampm-str;
+                    date-str: root.syd-date-str;
+                    hand-hour: root.syd-hand-hour;
+                    hand-min: root.syd-hand-min;
+                    current-second: root.current-second;
+                    right-clicked(x, y) => {
+                        root.row-right-clicked("SYD", x, y);
+                    }
+                }
+                if root.show-syd: Rectangle { height: 1px; background: rgba(255, 255, 255, 0.05); }
+
+                // Paris Row
+                if root.show-par: CityRow {
+                    name: "Paris";
+                    offset-str: root.par-offset-str;
+                    time-str: root.par-time-str;
+                    ampm-str: root.par-ampm-str;
+                    date-str: root.par-date-str;
+                    hand-hour: root.par-hand-hour;
+                    hand-min: root.par-hand-min;
+                    current-second: root.current-second;
+                    right-clicked(x, y) => {
+                        root.row-right-clicked("PAR", x, y);
+                    }
+                }
+                if root.show-par: Rectangle { height: 1px; background: rgba(255, 255, 255, 0.05); }
+
+                // Dubai Row
+                if root.show-dxb: CityRow {
+                    name: "Dubai";
+                    offset-str: root.dxb-offset-str;
+                    time-str: root.dxb-time-str;
+                    ampm-str: root.dxb-ampm-str;
+                    date-str: root.dxb-date-str;
+                    hand-hour: root.dxb-hand-hour;
+                    hand-min: root.dxb-hand-min;
+                    current-second: root.current-second;
+                    right-clicked(x, y) => {
+                        root.row-right-clicked("DXB", x, y);
+                    }
+                }
+                if root.show-dxb: Rectangle { height: 1px; background: rgba(255, 255, 255, 0.05); }
+
+                // Singapore Row
+                if root.show-sin: CityRow {
+                    name: "Singapore";
+                    offset-str: root.sin-offset-str;
+                    time-str: root.sin-time-str;
+                    ampm-str: root.sin-ampm-str;
+                    date-str: root.sin-date-str;
+                    hand-hour: root.sin-hand-hour;
+                    hand-min: root.sin-hand-min;
+                    current-second: root.current-second;
+                    right-clicked(x, y) => {
+                        root.row-right-clicked("SIN", x, y);
+                    }
+                }
+                if root.show-sin: Rectangle { height: 1px; background: rgba(255, 255, 255, 0.05); }
+            }
+        }
+    }
+}
+
+component FocusGoalInputBox inherits Rectangle {
+    in-out property <string> text;
+    
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.1);
+    
+    TextInput {
+        x: 8px;
+        width: parent.width - 16px;
+        height: 100%;
+        text <=> root.text;
+        font-size: 11px;
+        font-weight: 500;
+        color: white;
+        horizontal-alignment: left;
+        vertical-alignment: center;
+    }
+}
+
+component FocusDurationPresetItem inherits Rectangle {
+    in property <string> text;
+    in property <bool> selected;
+    callback clicked();
+    
+    height: 20px;
+    border-radius: 4px;
+    background: root.selected ? rgba(255, 255, 255, 0.12) : (touch.has-hover ? rgba(255, 255, 255, 0.08) : transparent);
+    
+    touch := TouchArea {
+        width: 100%;
+        height: 100%;
+        mouse-cursor: pointer;
+        clicked => { root.clicked(); }
+    }
+    
+    Text {
+        x: 6px;
+        text: root.text;
+        font-size: 11px;
+        font-weight: 500;
+        color: root.selected ? white : rgba(255, 255, 255, 0.8);
+        vertical-alignment: center;
+    }
+}
+
+component FocusDurationInputBox inherits Rectangle {
+    in-out property <string> text;
+    in property <string> placeholder: "";
+    callback accepted(string);
+    callback edited(string);
+    
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.1);
+    
+    TextInput {
+        x: 8px;
+        width: parent.width - 16px;
+        height: 100%;
+        text <=> root.text;
+        font-size: 11px;
+        font-weight: 500;
+        color: white;
+        horizontal-alignment: left;
+        vertical-alignment: center;
+        
+        accepted => { root.accepted(self.text); }
+        edited => { root.edited(self.text); }
+    }
+    
+    if root.text == "": Text {
+        x: 8px;
+        text: root.placeholder;
+        font-size: 11px;
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.25);
+        vertical-alignment: center;
+    }
+}
+
+component FocusDurationSelector inherits Rectangle {
+    in-out property <string> duration-str;
+    
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.1);
+    
+    callback clicked();
+    
+    TouchArea {
+        width: 100%;
+        height: 100%;
+        mouse-cursor: pointer;
+        clicked => { root.clicked(); }
+    }
+    
+    HorizontalLayout {
+        padding-left: 8px;
+        padding-right: 8px;
+        alignment: space-between;
+        
+        Text {
+            text: root.duration-str;
+            font-size: 11px;
+            font-weight: 500;
+            color: white;
+            vertical-alignment: center;
+        }
+        
+        VerticalLayout {
+            alignment: center;
+            Rectangle {
+                width: 12px;
+                height: 12px;
+                Path {
+                    width: 12px;
+                    height: 12px;
+                    viewbox-width: 24;
+                    viewbox-height: 24;
+                    stroke: rgba(255, 255, 255, 0.85);
+                    stroke-width: 1.5px;
+                    fill: transparent;
+                    commands: "M12 8v4l3 3 M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z";
+                }
+            }
+        }
+    }
+}
+
+export component FocusSessionPanel inherits Rectangle {
+    in-out property <string> focus-state: "setup"; // "setup", "running", "history"
+    in-out property <string> focus-goal: "Focus session";
+    in-out property <string> focus-duration-str: "30 minutes";
+    
+    in property <bool> focus-running: false;
+    in property <bool> focus-paused: false;
+    in property <bool> focus-bar-hidden: false;
+    in property <string> focus-remaining-str: "30:00";
+    in property <float> focus-progress: 0.0;
+    in property <[SlintFocusSession]> focus-history: [];
+    in property <[string]> focus-goal-presets: [];
+    in property <bool> premium-locked: false;
+    property <bool> show-goal-dropdown: false;
+    property <bool> show-duration-dropdown: false;
+    property <string> custom-duration-input: "";
+    in-out property <int> close-popups-trigger: 0;
+
+    callback back-clicked();
+    callback save-goal-preset(string);
+    callback start-session(string, string);
+    callback stop-session();
+    callback toggle-pause();
+    callback toggle-bar-visibility();
+    callback clear-history();
+    callback validate-duration-input(string) -> string;
+    callback format-numeric-duration(string) -> string;
+    callback duration-dropdown-changed(bool);
+    callback buy-license();
+
+    changed close-popups-trigger => {
+        if root.show-duration-dropdown {
+            root.duration-dropdown-changed(false);
+        }
+        root.show-goal-dropdown = false;
+        root.show-duration-dropdown = false;
+        root.custom-duration-input = "";
+    }
+
+    width: 260px;
+    height: 154px;
+    background: transparent;
+    border-width: 0px;
+
+    VerticalLayout {
+        opacity: root.premium-locked ? 0.28 : 1.0;
+        padding-left: 0px;
+        padding-right: 0px;
+        padding-top: 0px;
+        padding-bottom: 0px;
+        spacing: 0px;
+
+        // Header Row
+        HorizontalLayout {
+            height: 19px; alignment: space-between;
+            HorizontalLayout { spacing: 6px; alignment: center;
+                // Back button (arrow left)
+                TouchArea {
+                    width: 20px;
+                    height: 20px;
+                    mouse-cursor: pointer;
+                    clicked => {
+                        root.back-clicked();
+                    }
+                    Path {
+                        width: 14px;
+                        height: 14px;
+                        x: (parent.width - self.width)/2;
+                        y: (parent.height - self.height)/2;
+                        viewbox-width: 24;
+                        viewbox-height: 24;
+                        stroke: rgba(255, 255, 255, 0.6);
+                        stroke-width: 2px;
+                        fill: transparent;
+                        commands: "M19 12H5 M12 19l-7-7 7-7";
+                    }
+                }
+                Text {
+                    text: root.focus-state == "setup" ? "SESSION SETUP" : (root.focus-state == "running" ? "SESSION ACTIVE" : "SESSION HISTORY");
+                    font-size: 10px;
+                    font-weight: 800;
+                    letter-spacing: 0.8px;
+                    color: rgba(255, 255, 255, 0.6);
+                    vertical-alignment: center;
+                }
+            }
+            
+            HorizontalLayout {
+                spacing: 8px;
+                alignment: center;
+                
+                // Clear history button
+                if root.focus-state == "history" && root.focus-history.length > 0: TouchArea {
+                    width: 20px;
+                    height: 20px;
+                    mouse-cursor: pointer;
+                    clicked => {
+                        root.clear-history();
+                    }
+                    Path {
+                        width: 13px;
+                        height: 13px;
+                        x: (parent.width - self.width)/2;
+                        y: (parent.height - self.height)/2;
+                        viewbox-width: 24;
+                        viewbox-height: 24;
+                        stroke: rgba(255, 255, 255, 0.6);
+                        stroke-width: 2px;
+                        fill: transparent;
+                        commands: "M3 6h18 M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2";
+                    }
+                }
+                
+                // History toggle button
+                TouchArea {
+                    width: 20px;
+                    height: 20px;
+                    mouse-cursor: pointer;
+                    clicked => {
+                        if root.focus-state == "history" {
+                            root.focus-state = root.focus-running ? "running" : "setup";
+                        } else {
+                            root.focus-state = "history";
+                        }
+                    }
+                    // Clock/History icon
+                    Path {
+                        width: 14px;
+                        height: 14px;
+                        x: (parent.width - self.width)/2;
+                        y: (parent.height - self.height)/2;
+                        viewbox-width: 24;
+                        viewbox-height: 24;
+                        stroke: root.focus-state == "history" ? #ffae00 : rgba(255, 255, 255, 0.6);
+                        stroke-width: 2px;
+                        fill: transparent;
+                        commands: "M12 8v4l3 3 M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z";
+                    }
+                }
+            }
+        }
+
+        Rectangle { height: 2px; }
+        Rectangle { width: 100%; height: 1px; background: rgba(255, 255, 255, 0.08); }
+        Rectangle { height: 6px; }
+
+        if root.focus-state == "setup": VerticalLayout {
+            alignment: start;
+            spacing: 0px;
+
+            // Goal Input Row
+            HorizontalLayout {
+                height: 24px;
+                Text {
+                    text: "Goal";
+                    font-size: 11px;
+                    font-weight: 700;
+                    color: rgba(255, 255, 255, 0.5);
+                    width: 60px;
+                    vertical-alignment: center;
+                }
+                FocusGoalInputBox {
+                    text <=> root.focus-goal;
+                }
+                Rectangle { width: 6px; }
+                TouchArea {
+                    width: 24px;
+                    height: 24px;
+                    mouse-cursor: pointer;
+                    clicked => {
+                        root.show-goal-dropdown = !root.show-goal-dropdown;
+                        root.show-duration-dropdown = false;
+                    }
+                    Rectangle {
+                        width: 100%;
+                        height: 100%;
+                        border-radius: 6px;
+                        background: parent.has-hover ? rgba(255, 255, 255, 0.10) : rgba(255, 255, 255, 0.05);
+                        border-width: 1px;
+                        border-color: rgba(255, 255, 255, 0.10);
+                        Path {
+                            x: 6px; y: 8px; width: 12px; height: 8px;
+                            viewbox-width: 12; viewbox-height: 8;
+                            stroke: rgba(255, 255, 255, 0.72);
+                            stroke-width: 1.8px;
+                            fill: transparent;
+                            commands: "M1 1l5 5 5-5";
+                        }
+                    }
+                }
+                Rectangle { width: 4px; }
+                TouchArea {
+                    width: 24px;
+                    height: 24px;
+                    mouse-cursor: pointer;
+                    clicked => {
+                        root.save-goal-preset(root.focus-goal);
+                        root.show-goal-dropdown = true;
+                        root.show-duration-dropdown = false;
+                    }
+                    Rectangle {
+                        width: 100%;
+                        height: 100%;
+                        border-radius: 6px;
+                        background: parent.has-hover ? rgba(255, 174, 0, 0.20) : rgba(255, 174, 0, 0.10);
+                        border-width: 1px;
+                        border-color: rgba(255, 174, 0, 0.35);
+                        Path {
+                            x: 6px; y: 5px; width: 12px; height: 14px;
+                            viewbox-width: 24; viewbox-height: 24;
+                            stroke: #ffae00;
+                            stroke-width: 2px;
+                            fill: transparent;
+                            commands: "M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z M17 21v-8H7v8 M7 3v5h8";
+                        }
+                    }
+                }
+            }
+
+            Rectangle { height: 6px; }
+
+            // Duration Input Row
+            HorizontalLayout {
+                height: 24px;
+                Text {
+                    text: "Duration";
+                    font-size: 11px;
+                    font-weight: 700;
+                    color: rgba(255, 255, 255, 0.5);
+                    width: 60px;
+                    vertical-alignment: center;
+                }
+                FocusDurationSelector {
+                    duration-str: root.focus-duration-str;
+                    clicked => {
+                        root.show-duration-dropdown = true;
+                        root.custom-duration-input = "";
+                        root.duration-dropdown-changed(true);
+                    }
+                }
+            }
+
+            Rectangle { height: 10px; }
+
+            // Start Session Button
+            TouchArea {
+                height: 28px;
+                mouse-cursor: pointer;
+                clicked => {
+                    root.focus-state = "running";
+                    root.start-session(root.focus-goal, root.focus-duration-str);
+                }
+                Rectangle {
+                    width: 100%;
+                    height: 100%;
+                    border-radius: 6px;
+                    background: parent.has-hover ? rgba(255, 255, 255, 0.95) : rgba(255, 255, 255, 0.85);
+                    Text {
+                        text: "START SESSION";
+                        font-size: 11px;
+                        font-weight: 800;
+                        color: #0c0c0c;
+                        horizontal-alignment: center;
+                        vertical-alignment: center;
+                    }
+                }
+            }
+
+            Rectangle { height: 6px; }
+
+            // Session type subtext
+            Text {
+                text: "Session type: Deep Work";
+                font-size: 9px;
+                font-weight: 500;
+                color: rgba(255, 255, 255, 0.35);
+                horizontal-alignment: center;
+            }
+        }
+
+        if root.focus-state == "running": VerticalLayout {
+            alignment: center;
+            spacing: 0px;
+            
+            Rectangle { height: 4px; }
+
+            Text {
+                text: root.focus-goal == "" ? "Focus session" : root.focus-goal;
+                font-size: 11px;
+                font-weight: 700;
+                color: rgba(255, 255, 255, 0.5);
+                horizontal-alignment: center;
+                height: 14px;
+                overflow: elide;
+            }
+
+            Rectangle { height: 2px; }
+
+            Text {
+                text: root.focus-remaining-str;
+                font-size: 32px;
+                font-weight: 300;
+                color: white;
+                horizontal-alignment: center;
+                height: 38px;
+            }
+
+            Rectangle { height: 4px; }
+
+            // Progress bar
+            Rectangle {
+                width: 180px;
+                height: 3px;
+                background: rgba(255, 255, 255, 0.1);
+                border-radius: 1.5px;
+                x: (parent.width - self.width) / 2;
+                
+                Rectangle {
+                    x: 0px;
+                    y: 0px;
+                    width: parent.width * root.focus-progress;
+                    height: 100%;
+                    background: @linear-gradient(90deg, #ffae00 0%, #ff5e00 100%);
+                    border-radius: 1.5px;
+                }
+            }
+
+            Rectangle { height: 8px; }
+
+            // Controls Row (Pause/Resume & Hide/Show Status Bar)
+            HorizontalLayout {
+                spacing: 8px;
+                alignment: center;
+                
+                // Pause/Resume Button
+                TouchArea {
+                    height: 24px;
+                    width: 100px;
+                    mouse-cursor: pointer;
+                    clicked => {
+                        root.toggle-pause();
+                    }
+                    Rectangle {
+                        width: 100%;
+                        height: 100%;
+                        border-radius: 6px;
+                        background: parent.has-hover ? (root.focus-paused ? rgba(34, 197, 94, 0.2) : rgba(255, 174, 0, 0.2)) : (root.focus-paused ? rgba(34, 197, 94, 0.1) : rgba(255, 174, 0, 0.1));
+                        border-width: 1px;
+                        border-color: root.focus-paused ? rgba(34, 197, 94, 0.4) : rgba(255, 174, 0, 0.4);
+                        Text {
+                            text: root.focus-paused ? "RESUME" : "PAUSE";
+                            font-size: 9px;
+                            font-weight: 800;
+                            color: root.focus-paused ? #22c55e : #ffae00;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                        }
+                    }
+                }
+
+                // Hide/Show Bar Button
+                TouchArea {
+                    height: 24px;
+                    width: 100px;
+                    mouse-cursor: pointer;
+                    clicked => {
+                        root.toggle-bar-visibility();
+                    }
+                    Rectangle {
+                        width: 100%;
+                        height: 100%;
+                        border-radius: 6px;
+                        background: parent.has-hover ? (root.focus-bar-hidden ? rgba(59, 130, 246, 0.2) : rgba(255, 255, 255, 0.15)) : (root.focus-bar-hidden ? rgba(59, 130, 246, 0.1) : rgba(255, 255, 255, 0.08));
+                        border-width: 1px;
+                        border-color: root.focus-bar-hidden ? rgba(59, 130, 246, 0.4) : rgba(255, 255, 255, 0.2);
+                        Text {
+                            text: root.focus-bar-hidden ? "SHOW BAR" : "HIDE BAR";
+                            font-size: 9px;
+                            font-weight: 800;
+                            color: root.focus-bar-hidden ? #3b82f6 : rgba(255, 255, 255, 0.85);
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                        }
+                    }
+                }
+            }
+
+            Rectangle { height: 6px; }
+
+            // Stop Session Button
+            TouchArea {
+                height: 24px;
+                width: 120px;
+                x: (parent.width - self.width) / 2;
+                mouse-cursor: pointer;
+                clicked => {
+                    root.focus-state = "setup";
+                    root.stop-session();
+                }
+                Rectangle {
+                    width: 100%;
+                    height: 100%;
+                    border-radius: 6px;
+                    background: parent.has-hover ? rgba(255, 59, 48, 0.2) : rgba(255, 59, 48, 0.1);
+                    border-width: 1px;
+                    border-color: rgba(255, 59, 48, 0.4);
+                    Text {
+                        text: "STOP SESSION";
+                        font-size: 9px;
+                        font-weight: 800;
+                        color: #ff3b30;
+                        horizontal-alignment: center;
+                        vertical-alignment: center;
+                    }
+                }
+            }
+        }
+
+        if root.focus-state == "history": VerticalLayout {
+            alignment: start;
+            spacing: 0px;
+            
+            Flickable {
+                width: 100%;
+                height: 110px;
+                viewport-height: history-list.min-height;
+                interactive: true;
+
+                history-list := VerticalLayout {
+                    spacing: 0px;
+                    alignment: start;
+
+                    if root.focus-history.length == 0: VerticalLayout {
+                        alignment: center;
+                        height: 90px;
+                        Text {
+                            text: "No completed sessions yet";
+                            font-size: 11px;
+                            font-weight: 500;
+                            color: rgba(255, 255, 255, 0.3);
+                            horizontal-alignment: center;
+                        }
+                    }
+
+                    for session in root.focus-history: VerticalLayout {
+                        height: 28px;
+                        
+                        HorizontalLayout {
+                            padding-left: 4px;
+                            padding-right: 4px;
+                            alignment: space-between;
+                            
+                            VerticalLayout {
+                                alignment: center;
+                                spacing: 1px;
+                                Text {
+                                    text: session.goal == "" ? "Focus session" : session.goal;
+                                    font-size: 11px;
+                                    font-weight: 700;
+                                    color: white;
+                                    overflow: elide;
+                                    width: 150px;
+                                }
+                                Text {
+                                    text: session.completed-at;
+                                    font-size: 8px;
+                                    font-weight: 500;
+                                    color: rgba(255, 255, 255, 0.35);
+                                }
+                            }
+                            
+                            Text {
+                                text: session.duration-mins + " min";
+                                font-size: 11px;
+                                font-weight: 700;
+                                color: #ffae00;
+                                vertical-alignment: center;
+                            }
+                        }
+                        
+                        Rectangle { height: 1px; background: rgba(255, 255, 255, 0.05); }
+                    }
+                }
+            }
+        }
+    }
+
+    // Transparent overlay to close dropdown on clicking outside
+    if root.show-goal-dropdown: TouchArea {
+        width: 100%;
+        height: 100%;
+        z: 10;
+        clicked => {
+            root.show-goal-dropdown = false;
+        }
+    }
+
+    if root.show-goal-dropdown: Rectangle {
+        x: 66px;
+        y: 36px;
+        width: parent.width - 72px;
+        height: min(92px, 28px + root.focus-goal-presets.length * 22px);
+        background: #1e1e1e;
+        border-radius: 8px;
+        border-width: 1px;
+        border-color: rgba(255, 255, 255, 0.15);
+        z: 20;
+
+        VerticalLayout {
+            padding: 6px;
+            spacing: 3px;
+
+            if root.focus-goal-presets.length == 0: Text {
+                height: 22px;
+                text: "No saved goals yet";
+                font-size: 10px;
+                font-weight: 600;
+                color: rgba(255, 255, 255, 0.42);
+                vertical-alignment: center;
+            }
+
+            ScrollView {
+                height: 76px;
+                VerticalLayout {
+                    spacing: 2px;
+                    for goal in root.focus-goal-presets: FocusDurationPresetItem {
+                        text: goal;
+                        selected: root.focus-goal == goal;
+                        clicked => {
+                            root.focus-goal = goal;
+                            root.show-goal-dropdown = false;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if root.show-duration-dropdown: TouchArea {
+        width: 100%;
+        height: 100%;
+        z: 10;
+        clicked => {
+            root.show-duration-dropdown = false;
+            root.custom-duration-input = "";
+            root.duration-dropdown-changed(false);
+        }
+    }
+
+    // Dropdown menu overlay
+    if root.show-duration-dropdown: Rectangle {
+        x: 6px;
+        y: 6px;
+        width: parent.width - 12px;
+        height: parent.height - 12px;
+        background: #1e1e1e;
+        border-radius: 8px;
+        border-width: 1px;
+        border-color: rgba(255, 255, 255, 0.15);
+        z: 20;
+        
+        VerticalLayout {
+            padding: 6px;
+            spacing: 6px;
+            
+            // Custom Duration input box
+            FocusDurationInputBox {
+                height: 24px;
+                text <=> root.custom-duration-input;
+                placeholder: "Enter duration in minutes (e.g. 64)";
+                accepted(val) => {
+                    if val != "" {
+                        root.focus-duration-str = root.format-numeric-duration(val);
+                        root.show-duration-dropdown = false;
+                        root.duration-dropdown-changed(false);
+                    }
+                }
+                edited(val) => {
+                    root.custom-duration-input = root.validate-duration-input(val);
+                }
+            }
+            
+            // Presets list
+            ScrollView {
+                VerticalLayout {
+                    alignment: start;
+                    spacing: 2px;
+                    
+                    FocusDurationPresetItem {
+                        text: "No Limit";
+                        selected: root.focus-duration-str == "No Limit";
+                        clicked => {
+                            root.focus-duration-str = "No Limit";
+                            root.show-duration-dropdown = false;
+                            root.duration-dropdown-changed(false);
+                        }
+                    }
+                    FocusDurationPresetItem {
+                        text: "15 minutes";
+                        selected: root.focus-duration-str == "15 minutes";
+                        clicked => {
+                            root.focus-duration-str = "15 minutes";
+                            root.show-duration-dropdown = false;
+                            root.duration-dropdown-changed(false);
+                        }
+                    }
+                    FocusDurationPresetItem {
+                        text: "30 minutes";
+                        selected: root.focus-duration-str == "30 minutes";
+                        clicked => {
+                            root.focus-duration-str = "30 minutes";
+                            root.show-duration-dropdown = false;
+                            root.duration-dropdown-changed(false);
+                        }
+                    }
+                    FocusDurationPresetItem {
+                        text: "1 hour";
+                        selected: root.focus-duration-str == "1 hour";
+                        clicked => {
+                            root.focus-duration-str = "1 hour";
+                            root.show-duration-dropdown = false;
+                            root.duration-dropdown-changed(false);
+                        }
+                    }
+                    FocusDurationPresetItem {
+                        text: "1 hour 30 minutes";
+                        selected: root.focus-duration-str == "1 hour 30 minutes";
+                        clicked => {
+                            root.focus-duration-str = "1 hour 30 minutes";
+                            root.show-duration-dropdown = false;
+                            root.duration-dropdown-changed(false);
+                        }
+                    }
+                    FocusDurationPresetItem {
+                        text: "Until Noon";
+                        selected: root.focus-duration-str == "Until Noon";
+                        clicked => {
+                            root.focus-duration-str = "Until Noon";
+                            root.show-duration-dropdown = false;
+                            root.duration-dropdown-changed(false);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if root.premium-locked: Rectangle {
+        width: 100%;
+        height: 100%;
+        border-radius: 18px;
+        background: rgba(5, 6, 6, 0.82);
+        border-width: 1px;
+        border-color: rgba(52, 199, 89, 0.30);
+
+        VerticalLayout {
+            padding-left: 18px;
+            padding-right: 18px;
+            spacing: 8px;
+            alignment: center;
+
+            Text { text: "Trial period over"; font-size: 15px; font-weight: 900; color: white; horizontal-alignment: center; }
+            Text { text: "Focus timer is premium. Buy Raven Notch to unlock it."; font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.58); horizontal-alignment: center; wrap: word-wrap; }
+            HorizontalLayout {
+                width: 100%;
+                alignment: center;
+                Rectangle {
+                    width: 84px;
+                    height: 28px;
+                    border-radius: 14px;
+                    background: #34C759;
+                    Text { text: "Buy Now"; font-size: 10px; font-weight: 900; color: #061008; horizontal-alignment: center; vertical-alignment: center; }
+                    TouchArea { mouse-cursor: pointer; clicked => { root.buy-license(); } }
+                }
+            }
+        }
+    }
+}
+

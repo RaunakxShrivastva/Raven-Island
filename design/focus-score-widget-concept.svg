@@ -1,0 +1,113 @@
+<svg width="920" height="620" viewBox="0 0 920 620" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="wall" x1="80" y1="80" x2="840" y2="560" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#08090D"/>
+      <stop offset="0.45" stop-color="#11131B"/>
+      <stop offset="1" stop-color="#020305"/>
+    </linearGradient>
+    <radialGradient id="glowViolet" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(322 210) rotate(58) scale(370 220)">
+      <stop stop-color="#8B5CF6" stop-opacity="0.32"/>
+      <stop offset="0.62" stop-color="#8B5CF6" stop-opacity="0.05"/>
+      <stop offset="1" stop-color="#8B5CF6" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="card" x1="266" y1="146" x2="676" y2="430" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#191B22" stop-opacity="0.92"/>
+      <stop offset="0.52" stop-color="#090A0F" stop-opacity="0.92"/>
+      <stop offset="1" stop-color="#111217" stop-opacity="0.88"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="278" y1="148" x2="646" y2="448" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF" stop-opacity="0.22"/>
+      <stop offset="0.18" stop-color="#FFFFFF" stop-opacity="0.03"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="314" y1="214" x2="598" y2="214" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#A855F7"/>
+      <stop offset="0.48" stop-color="#22D3EE"/>
+      <stop offset="1" stop-color="#F59E0B"/>
+    </linearGradient>
+    <filter id="shadow" x="188" y="104" width="544" height="388" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+      <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+      <feOffset dy="16"/>
+      <feGaussianBlur stdDeviation="22"/>
+      <feComposite in2="hardAlpha" operator="out"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.48 0"/>
+      <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_1_1"/>
+      <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_1_1" result="shape"/>
+    </filter>
+    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3.5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <style>
+      .font { font-family: Inter, Segoe UI, Arial, sans-serif; }
+      .label { fill: #8D8F98; font-size: 18px; font-weight: 800; letter-spacing: .6px; }
+      .small { fill: #8B8D96; font-size: 16px; font-weight: 700; }
+      .value { fill: #FFFFFF; font-size: 70px; font-weight: 850; letter-spacing: -1px; }
+      .row-title { fill: #F4F5F7; font-size: 20px; font-weight: 800; }
+      .row-time { fill: #C7CAD1; font-size: 18px; font-weight: 800; }
+    </style>
+  </defs>
+
+  <rect width="920" height="620" fill="url(#wall)"/>
+  <path d="M-40 512C115 448 226 374 367 309C489 253 610 225 961 102" stroke="white" stroke-opacity="0.09" stroke-width="8"/>
+  <path d="M-22 496C132 434 233 369 372 306C498 248 633 214 958 118" stroke="#A5B4FC" stroke-opacity="0.18" stroke-width="2"/>
+  <path d="M128 596C317 472 497 387 869 314" stroke="white" stroke-opacity="0.08" stroke-width="10"/>
+  <path d="M172 30C312 160 427 247 650 334" stroke="#94A3B8" stroke-opacity="0.08" stroke-width="14"/>
+  <rect width="920" height="620" fill="url(#glowViolet)"/>
+
+  <g filter="url(#shadow)">
+    <rect x="230" y="136" width="460" height="344" rx="36" fill="url(#card)"/>
+    <rect x="230.75" y="136.75" width="458.5" height="342.5" rx="35.25" stroke="#31333D" stroke-opacity="0.92" stroke-width="1.5"/>
+    <path d="M258 162C340 188 410 226 495 305C542 349 590 392 660 431" stroke="url(#shine)" stroke-width="72" stroke-linecap="round" opacity=".32"/>
+  </g>
+
+  <text x="272" y="188" class="font label">FOCUS SCORE</text>
+  <rect x="272" y="203" width="92" height="5" rx="2.5" fill="url(#accent)"/>
+
+  <g transform="translate(548 168)">
+    <circle cx="62" cy="62" r="48" stroke="#262832" stroke-width="12"/>
+    <circle cx="62" cy="62" r="48" stroke="#F7B955" stroke-width="12" stroke-linecap="round" stroke-dasharray="253 302" transform="rotate(-90 62 62)" filter="url(#softGlow)"/>
+    <circle cx="62" cy="62" r="31" fill="#090A0F" stroke="#292B34"/>
+    <text x="62" y="66" text-anchor="middle" class="font" fill="#FFFFFF" font-size="28" font-weight="900">84</text>
+    <text x="62" y="86" text-anchor="middle" class="font" fill="#F7B955" font-size="10" font-weight="900">SCORE</text>
+  </g>
+
+  <g transform="translate(272 230)">
+    <path d="M31 8L17 34H32L25 62L51 25H35L44 8H31Z" fill="#A855F7" opacity=".92"/>
+    <path d="M31 8L17 34H32L25 62L51 25H35L44 8H31Z" stroke="#22D3EE" stroke-opacity=".42" stroke-width="2"/>
+  </g>
+
+  <text x="340" y="286" class="font value">12h 45m</text>
+  <text x="344" y="316" class="font small">Total Focus</text>
+
+  <g transform="translate(274 350)">
+    <rect x="0" y="0" width="372" height="36" rx="10" fill="#FFFFFF" fill-opacity=".045"/>
+    <circle cx="19" cy="18" r="5" fill="#A855F7"/>
+    <text x="36" y="24" class="font row-title">Coding</text>
+    <text x="300" y="24" class="font row-time">6h 20m</text>
+    <rect x="36" y="30" width="252" height="4" rx="2" fill="#2A2C35"/>
+    <rect x="36" y="30" width="185" height="4" rx="2" fill="#A855F7"/>
+  </g>
+
+  <g transform="translate(274 394)">
+    <rect x="0" y="0" width="372" height="36" rx="10" fill="#FFFFFF" fill-opacity=".035"/>
+    <circle cx="19" cy="18" r="5" fill="#22D3EE"/>
+    <text x="36" y="24" class="font row-title">Study</text>
+    <text x="302" y="24" class="font row-time">4h 10m</text>
+    <rect x="36" y="30" width="252" height="4" rx="2" fill="#2A2C35"/>
+    <rect x="36" y="30" width="123" height="4" rx="2" fill="#22D3EE"/>
+  </g>
+
+  <g transform="translate(274 438)">
+    <rect x="0" y="0" width="372" height="36" rx="10" fill="#FFFFFF" fill-opacity=".03"/>
+    <circle cx="19" cy="18" r="5" fill="#F59E0B"/>
+    <text x="36" y="24" class="font row-title">Design</text>
+    <text x="302" y="24" class="font row-time">2h 15m</text>
+    <rect x="36" y="30" width="252" height="4" rx="2" fill="#2A2C35"/>
+    <rect x="36" y="30" width="72" height="4" rx="2" fill="#F59E0B"/>
+  </g>
+</svg>

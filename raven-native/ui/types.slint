@@ -1,0 +1,131 @@
+export struct SlintCalendarEvent {
+    title: string,
+    date_str: string,
+}
+
+export struct SlintCalendarDay {
+    day_num: string,
+    day_name: string,
+    month_name: string,
+    year: string,
+    start_timestamp: int,
+    end_timestamp: int,
+    is_today: bool,
+}
+
+export struct SlintNotification {
+    id: int,
+    app_name: string,
+    title: string,
+    body: string,
+    avatar: string,
+}
+
+export struct SlintWorldClock {
+    city: string,
+    zone: string,
+    time_str: string,
+    ampm_str: string,
+    date_str: string,
+    offset_str: string,
+    hand_hour: int,
+    hand_min: int,
+}
+
+export struct SlintShelfItem {
+    id: string,
+    name: string,
+    path: string,
+    size_str: string,
+    is_image: bool,
+    is_video: bool,
+    thumbnail: image,
+}
+
+export struct SlintGoogleCalendarEntry {
+    id: string,
+    summary: string,
+    selected: bool,
+    primary: bool,
+    color: color,
+}
+
+export struct SlintMiniCalendarDay {
+    day_num: string,
+    is_current_month: bool,
+    is_today: bool,
+    is_selected: bool,
+}
+
+export struct SlintOpenApp {
+    id: int,
+    name: string,
+    icon: image,
+}
+
+export struct SlintProcessStat {
+    name: string,
+    icon: image,
+    cpu_pct: float,
+    ram_pct: float,
+    gpu_pct: float,
+}
+
+export struct SlintClipboardItem {
+    id: int,
+    kind: string,
+    title: string,
+    subtitle: string,
+    preview_text: string,
+    image: image,
+    is_image: bool,
+    pinned: bool,
+    section: string,
+    row_y: int,
+    multi_selected: bool,
+}
+
+export struct SlintWifiNetwork {
+    ssid: string,
+    signal: int,
+    security: string,
+    connected: bool,
+    saved: bool,
+}
+
+export struct SlintMediaSession {
+    source_id: string,
+    clean_name: string,
+    icon: image,
+    is_active: bool,
+}
+
+export struct SlintFocusSession {
+    goal: string,
+    duration_mins: int,
+    completed_at: string,
+}
+
+export struct SlintFocusScoreRow {
+    goal: string,
+    duration_label: string,
+    progress: float,
+    accent: color,
+}
+
+export struct SlintStreakDay {
+    label: string,
+    day_number: string,
+    focus: bool,
+    today: bool,
+    missed: bool,
+}
+
+export struct SlintAppShortcut {
+    name: string,
+    path: string,
+    icon: image,
+    has_icon: bool,
+}
+
+

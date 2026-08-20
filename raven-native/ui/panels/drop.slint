@@ -1,0 +1,422 @@
+import { SlintShelfItem } from "../types.slint";
+import { ScrollView } from "std-widgets.slint";
+
+export component DropPanel inherits HorizontalLayout {
+    in-out property <[SlintShelfItem]> items: [];
+    in-out property <string> share-provider-name: "LocalSend";
+    in-out property <string> share-provider-id: "localsend";
+    in-out property <string> share-notice: "";
+    in-out property <string> share-notice-state: "info"; // "info", "sending", "sent", "error"
+    in-out property <bool> share-active: false;
+    in-out property <bool> keep-active: false;
+
+    callback item-open(string);
+    callback item-reveal(string);
+    callback item-copy(string);
+    callback item-remove(string);
+    callback clear-shelf();
+    callback share-file(string, string);
+    callback select-next-provider();
+    callback shelf-right-clicked(length, length);
+    callback card-right-clicked(int, string, string, length, length);
+
+    spacing: 16px;
+    height: 100%;
+    padding-top: 4px;
+    padding-bottom: 4px;
+
+    // Premium dynamic colors matching original tauri / app specifications
+    property <color> provider-color: 
+        share-provider-id == "localsend" ? #00D1B2 :
+        share-provider-id == "quickshare" ? #1A73E8 :
+        #8A2BE2; // KDE Connect / Default
+
+    property <color> provider-bg: 
+        share-provider-id == "localsend" ? rgba(0, 209, 178, 0.05) :
+        share-provider-id == "quickshare" ? rgba(26, 115, 232, 0.05) :
+        rgba(138, 43, 226, 0.05);
+
+    // ── LEFT REGION: SHARE TARGET ──
+    share-target := TouchArea {
+        width: 160px;
+        mouse-cursor: pointer;
+        clicked => {
+            root.select-next-provider();
+        }
+
+        Rectangle {
+            width: 100%;
+            height: 100%;
+
+            // Dashed background border SVG
+            Image {
+                source: @image-url("../assets/border-dashed-left.svg");
+                width: 100%;
+                height: 100%;
+                image-fit: fill;
+                colorize: root.share-active ? root.provider-color : rgba(255, 255, 255, 0.15);
+            }
+
+            // High-fidelity active share state glow overlay (no solid border)
+            if root.share-active: Rectangle {
+                width: 100%;
+                height: 100%;
+                border-radius: 20px;
+                background: rgba(255, 255, 255, 0.04);
+            }
+
+            VerticalLayout {
+                alignment: center;
+                spacing: 12px;
+                padding-left: 8px;
+                padding-right: 8px;
+
+                // Center Icon Badge/Button
+                HorizontalLayout {
+                    alignment: center;
+                    Rectangle {
+                        width: share-target.has-hover ? 76px : 72px;
+                        height: share-target.has-hover ? 76px : 72px;
+                        border-radius: self.width / 2;
+                        background: #181818;
+                        border-width: 1px;
+                        border-color: share-target.has-hover ? rgba(255, 255, 255, 0.2) : rgba(255, 255, 255, 0.08);
+                        
+                        animate width, height, border-color { duration: 150ms; easing: cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+                        // Icon mapping
+                        if share-provider-id == "localsend": Image {
+                            width: 52px;
+                            height: 52px;
+                            source: @image-url("../assets/localsend.png");
+                            x: (parent.width - self.width) / 2;
+                            y: (parent.height - self.height) / 2;
+                        }
+                        if share-provider-id == "quickshare": Image {
+                            width: 48px;
+                            height: 48px;
+                            source: @image-url("../assets/quickshare.svg");
+                            x: (parent.width - self.width) / 2;
+                            y: (parent.height - self.height) / 2;
+                        }
+                        if share-provider-id == "kdeconnect": Image {
+                            width: 48px;
+                            height: 48px;
+                            source: @image-url("../assets/kdeconnect.svg");
+                            x: (parent.width - self.width) / 2;
+                            y: (parent.height - self.height) / 2;
+                        }
+                    }
+                }
+
+                // Title Typography
+                Text {
+                    text: root.share-provider-name;
+                    font-size: 16px;
+                    font-weight: 800;
+                    color: white;
+                    horizontal-alignment: center;
+                }
+
+                // Small Status Notice if active/sharing
+                if root.share-notice != "": Text {
+                    text: root.share-notice;
+                    font-size: 9px;
+                    font-weight: 700;
+                    color: root.share-notice-state == "error" ? #FF453A :
+                           root.share-notice-state == "sent" ? #30D158 :
+                           rgba(255, 255, 255, 0.6);
+                    horizontal-alignment: center;
+                    wrap: word-wrap;
+                }
+            }
+        }
+    }
+
+    // ── RIGHT REGION: SHELF STORAGE ──
+    Rectangle {
+        horizontal-stretch: 1;
+
+        // Dashed background border SVG
+        Image {
+            source: @image-url("../assets/border-dashed-right.svg");
+            width: 100%;
+            height: 100%;
+            image-fit: fill;
+            colorize: root.keep-active ? #00FF88 : rgba(255, 255, 255, 0.15);
+        }
+
+        // High-fidelity active shelf state glow overlay (no solid border)
+        if root.keep-active: Rectangle {
+            width: 100%;
+            height: 100%;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        VerticalLayout {
+            padding: 8px;
+            spacing: 6px;
+
+            // Toolbar (visible when shelf has items)
+            if root.items.length > 0: HorizontalLayout {
+                alignment: space-between;
+                height: 16px;
+                padding-left: 8px;
+                padding-right: 8px;
+
+                HorizontalLayout {
+                    spacing: 6px;
+                    Image {
+                        width: 12px;
+                        height: 12px;
+                        source: @image-url("../assets/inbox-topbar.png");
+                        colorize: white;
+                        opacity: 0.6;
+                        y: (parent.height - self.height) / 2;
+                    }
+                    Text {
+                        text: "Shelf (" + root.items.length + ")";
+                        font-size: 11px;
+                        font-weight: 800;
+                        color: rgba(255, 255, 255, 0.85);
+                        vertical-alignment: center;
+                    }
+                }
+
+                clear-btn := TouchArea {
+                    mouse-cursor: pointer;
+                    clicked => { root.clear-shelf(); }
+                    HorizontalLayout {
+                        spacing: 4px;
+                        Text {
+                            text: "Clear All";
+                            font-size: clear-btn.has-hover ? 11px : 10px;
+                            font-weight: 700;
+                            color: clear-btn.has-hover ? #FF453A : rgba(255, 255, 255, 0.4);
+                            vertical-alignment: center;
+                            animate color, font-size { duration: 100ms; }
+                        }
+                    }
+                }
+            }
+
+            // Shelf Main Area
+            Rectangle {
+                horizontal-stretch: 1;
+                vertical-stretch: 1;
+
+                TouchArea {
+                    width: 100%;
+                    height: 100%;
+                    pointer-event(evt) => {
+                        if evt.button == PointerEventButton.right && evt.kind == PointerEventKind.down {
+                            root.shelf-right-clicked(self.mouse-x + 176px, self.mouse-y + 24px);
+                        }
+                    }
+                }
+
+                // Empty State exactly matching the user's high-fidelity mockup
+                if root.items.length == 0: VerticalLayout {
+                    alignment: center;
+                    spacing: 12px;
+
+                    HorizontalLayout {
+                        alignment: center;
+                        Image {
+                            width: 32px;
+                            height: 32px;
+                            source: @image-url("../assets/inbox.svg");
+                            colorize: white;
+                            opacity: 0.5;
+                        }
+                    }
+
+                    Text {
+                        text: "Drop files here";
+                        font-size: 16px;
+                        font-weight: 800;
+                        color: #888888;
+                        horizontal-alignment: center;
+                    }
+                }
+
+                // File Cards Carousel List
+                if root.items.length > 0: ScrollView {
+                    viewport-width: root.items.length * 148px + 8px;
+                    width: 100%;
+                    height: 100%;
+
+                    HorizontalLayout {
+                        padding-left: 8px;
+                        padding-right: 8px;
+                        padding-top: 8px;
+                        padding-bottom: 8px;
+                        spacing: 10px;
+                        alignment: start;
+
+                        for item[idx] in root.items: Rectangle {
+                            width: 138px;
+                            height: 94px;
+                            border-radius: 8px;
+                            background: rgba(255, 255, 255, 0.03);
+                            border-width: 1px;
+                            border-color: rgba(255, 255, 255, 0.08);
+
+                            TouchArea {
+                                width: 100%;
+                                height: 100%;
+                                pointer-event(evt) => {
+                                    if evt.button == PointerEventButton.right && evt.kind == PointerEventKind.down {
+                                        root.card-right-clicked(idx, item.id, item.path, self.mouse-x, self.mouse-y);
+                                    }
+                                }
+                            }
+
+                            // Background Preview if image
+                            if item.is-image: Rectangle {
+                                width: 100%;
+                                height: 100%;
+                                border-radius: 7px;
+                                clip: true;
+                                Image {
+                                    width: 100%;
+                                    height: 100%;
+                                    source: item.thumbnail;
+                                    image-fit: cover;
+                                    opacity: 0.15;
+                                }
+                            }
+
+                            // Card layout content
+                            VerticalLayout {
+                                padding: 6px;
+                                spacing: 4px;
+                                alignment: space-between;
+
+                                // Top row: File details & Close button
+                                HorizontalLayout {
+                                    alignment: space-between;
+                                    spacing: 4px;
+                                    height: 16px;
+
+                                    // Small thumbnail / glyph
+                                    Rectangle {
+                                        width: 14px;
+                                        height: 14px;
+                                        background: transparent;
+                                        y: (parent.height - self.height) / 2;
+
+                                        if item.is-image: Rectangle {
+                                            width: 100%;
+                                            height: 100%;
+                                            border-radius: 2px;
+                                            clip: true;
+                                            Image {
+                                                width: 100%;
+                                                height: 100%;
+                                                source: item.thumbnail;
+                                                image-fit: contain;
+                                            }
+                                        }
+                                        if !item.is-image && item.is-video: Image {
+                                            width: 100%;
+                                            height: 100%;
+                                            source: @image-url("../assets/waveform.svg");
+                                            colorize: #00FF88;
+                                        }
+                                        if !item.is-image && !item.is-video: Image {
+                                            width: 100%;
+                                            height: 100%;
+                                            source: @image-url("../assets/books.svg");
+                                            colorize: #FFD700;
+                                        }
+                                    }
+
+                                    // Close button
+                                    close-area := TouchArea {
+                                        width: 14px;
+                                        height: 14px;
+                                        mouse-cursor: pointer;
+                                        clicked => {
+                                            root.item-remove(item.id);
+                                        }
+                                        Text {
+                                            text: "×";
+                                            font-size: close-area.has-hover ? 16px : 14px;
+                                            font-weight: 700;
+                                            color: close-area.has-hover ? #FF453A : rgba(255, 255, 255, 0.4);
+                                            horizontal-alignment: center;
+                                            vertical-alignment: center;
+                                            animate font-size, color { duration: 100ms; }
+                                        }
+                                    }
+                                }
+
+                                // Middle section: Filename & size
+                                VerticalLayout {
+                                    spacing: 1px;
+                                    Text {
+                                        text: item.name;
+                                        font-size: 10px;
+                                        font-weight: 800;
+                                        color: white;
+                                        overflow: elide;
+                                        max-height: 14px;
+                                    }
+                                    Text {
+                                        text: item.size-str;
+                                        font-size: 8px;
+                                        color: rgba(255, 255, 255, 0.45);
+                                    }
+                                }
+
+                                // Bottom row: Actions (Open, Copy, Remove)
+                                HorizontalLayout {
+                                    alignment: space-between;
+                                    height: 16px;
+
+                                    btn-open := TouchArea {
+                                        mouse-cursor: pointer;
+                                        clicked => { root.item-open(item.path); }
+                                        Text {
+                                            text: "Open";
+                                            font-size: btn-open.has-hover ? 10px : 9px;
+                                            font-weight: 800;
+                                            color: btn-open.has-hover ? white : rgba(255, 255, 255, 0.45);
+                                            animate font-size, color { duration: 100ms; }
+                                        }
+                                    }
+
+                                    btn-copy := TouchArea {
+                                        mouse-cursor: pointer;
+                                        clicked => { root.item-copy(item.path); }
+                                        Text {
+                                            text: "Copy";
+                                            font-size: btn-copy.has-hover ? 10px : 9px;
+                                            font-weight: 800;
+                                            color: btn-copy.has-hover ? white : rgba(255, 255, 255, 0.45);
+                                            animate font-size, color { duration: 100ms; }
+                                        }
+                                    }
+
+                                    btn-remove := TouchArea {
+                                        mouse-cursor: pointer;
+                                        clicked => { root.item-remove(item.id); }
+                                        Text {
+                                            text: "Remove";
+                                            font-size: btn-remove.has-hover ? 10px : 9px;
+                                            font-weight: 800;
+                                            color: btn-remove.has-hover ? #FF453A : rgba(255, 255, 255, 0.45);
+                                            animate font-size, color { duration: 100ms; }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

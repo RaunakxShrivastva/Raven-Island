@@ -1,0 +1,581 @@
+import { SlintMediaSession } from "../types.slint";
+
+export component LeftMediaPanel inherits Rectangle {
+    in property <bool> has-media-art;
+    in property <image> media-art-url;
+    in property <string> media-title;
+    in property <string> media-artist;
+    in property <string> media-album;
+    in property <float> media-pct;
+    in property <string> media-pos-str;
+    in property <string> media-dur-str;
+    in-out property <bool> is-playing;
+    in property <string> media-source: "Spotify";
+    in property <bool> show-waveform: true;
+    in property <bool> waveform-active: root.is-playing;
+    in property <float> waveform-clock-ms: 0.0;
+    in property <[SlintMediaSession]> media-sessions: [];
+    callback switch-media-source(string);
+
+    callback prev();
+    callback play-pause();
+    callback next();
+    callback right-clicked(length, length);
+    callback seek-backward();
+    callback seek-forward();
+    callback cycle-media-source(bool);
+
+    width: 344px;
+    height: 186px;
+    background: transparent;
+    border-width: 0px;
+
+    property <float> wave-time: root.waveform-clock-ms;
+    property <[float]> waveform-heights: [
+        7.0, 13.0, 19.0, 10.0, 24.0, 16.0, 9.0, 21.0, 14.0, 27.0, 18.0, 11.0,
+        23.0, 15.0, 8.0, 20.0, 12.0, 25.0, 17.0, 10.0, 22.0, 14.0, 26.0, 16.0,
+        9.0, 21.0, 13.0, 24.0, 18.0, 11.0, 20.0, 15.0, 8.0, 23.0, 12.0, 19.0
+    ];
+    property <[float]> waveform-durations: [
+        980.0, 1120.0, 1260.0, 1040.0, 1380.0, 1160.0, 1300.0, 1080.0, 1420.0, 1200.0, 1000.0, 1340.0,
+        1100.0, 1460.0, 1240.0, 1020.0, 1360.0, 1140.0, 1280.0, 1060.0, 1400.0, 1180.0, 1320.0, 960.0,
+        1220.0, 1440.0, 1080.0, 1260.0, 1040.0, 1380.0, 1160.0, 1300.0, 980.0, 1120.0, 1460.0, 1200.0
+    ];
+    property <[float]> waveform-delays: [
+        0.0, 45.0, 90.0, 135.0, 180.0, 225.0, 270.0, 315.0, 360.0, 405.0, 450.0, 495.0,
+        540.0, 585.0, 630.0, 675.0, 720.0, 765.0, 810.0, 855.0, 900.0, 945.0, 990.0, 1035.0,
+        1080.0, 1125.0, 1170.0, 1215.0, 1260.0, 1305.0, 1350.0, 1395.0, 1440.0, 1485.0, 1530.0, 1575.0
+    ];
+
+    // MAIN PLAYER REGION
+    HorizontalLayout {
+        y: 0px;
+        height: 140px;
+        spacing: 16px;
+        alignment: start;
+        
+        // Left Column: Album Art + Buttons beneath
+        VerticalLayout {
+            width: 112px;
+            alignment: center;
+            spacing: 6px;
+
+            Rectangle {
+                width: 112px;
+                height: 112px;
+                border-radius: 23px; // extra rounded squircle like reference image
+                background: rgba(255, 255, 255, 0.04);
+                border-width: 1px;
+                border-color: rgba(255, 255, 255, 0.08);
+                drop-shadow-blur: 16px;
+                drop-shadow-color: rgba(0, 0, 0, 0.35);
+                drop-shadow-offset-y: 6px;
+                clip: true;
+
+                if root.has-media-art: Image {
+                    width: 100%;
+                    height: 100%;
+                    source: root.media-art-url;
+                    image-fit: cover;
+                }
+                if !root.has-media-art: Rectangle {
+                    width: 100%; height: 100%;
+                    background: @radial-gradient(circle, rgba(255, 255, 255, 0.12) 0%, transparent 70%);
+                    
+                    // Subtle glowing inner dots like the reference illustration
+                    Rectangle {
+                        x: 20px; y: 20px; width: 28px; height: 28px;
+                        border-radius: 14px;
+                        background: @radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 60%);
+                    }
+                    Rectangle {
+                        x: 52px; y: 40px; width: 36px; height: 36px;
+                        border-radius: 18px;
+                        background: @radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 60%);
+                    }
+                    // Tiny stars/dots from reference mockup
+                    Rectangle {
+                        x: 62px; y: 44px; width: 5px; height: 5px;
+                        border-radius: 2.5px; background: rgba(255, 255, 255, 0.85);
+                    }
+                    Rectangle {
+                        x: 80px; y: 24px; width: 3px; height: 3px;
+                        border-radius: 1.5px; background: rgba(255, 255, 255, 0.6);
+                    }
+                }
+
+                TouchArea {
+                    width: 100%;
+                    height: 100%;
+                    pointer-event(evt) => {
+                        if evt.kind == PointerEventKind.down {
+                            if evt.button == PointerEventButton.left {
+                                root.cycle-media-source(true);
+                            } else if evt.button == PointerEventButton.right {
+                                root.right-clicked(self.mouse-x, self.mouse-y + 2px);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Multiple Media Sources Row (aligned beneath the album art)
+            if root.media-sessions.length > 1: HorizontalLayout {
+                height: 22px;
+                spacing: 4px;
+                alignment: center;
+                
+                for sess in root.media-sessions: Rectangle {
+                    width: 22px;
+                    height: 22px;
+                    border-radius: 11px;
+                    background: sess.is-active ? #0066FF : rgba(0, 0, 0, 0.85);
+                    border-width: 1.5px;
+                    border-color: sess.is-active ? #0066FF : rgba(255, 255, 255, 0.15);
+                    
+                    Image {
+                        width: 12px;
+                        height: 12px;
+                        source: sess.icon;
+                        x: (parent.width - self.width) / 2;
+                        y: (parent.height - self.height) / 2;
+                    }
+                    
+                    TouchArea {
+                        clicked => {
+                            root.switch-media-source(sess.source-id);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Right Column: Stacked Meta + Progress + Centered Playback Controls
+        VerticalLayout {
+            width: 216px; // 344 - 112 - 16 = 216px
+            height: 100%;
+            alignment: space-between;
+            padding-top: 2px;
+            padding-bottom: 2px;
+
+            // Typography & Metadata Column
+            Rectangle {
+                height: 48px;
+                width: 100%;
+
+                VerticalLayout {
+                    spacing: 1px;
+                    
+                    // Title
+                    Text {
+                        text: root.media-title != "" ? root.media-title : "No Media Playing";
+                        font-size: 14px;
+                        font-weight: 800; // Bold typography hierarchy like the reference
+                        color: white;
+                        overflow: elide;
+                        letter-spacing: -0.2px;
+                    }
+                    
+                    // Artist
+                    Text {
+                        text: root.media-artist != "" ? root.media-artist + " • " + root.media-source : "Connect your player (" + root.media-source + ")";
+                        font-size: 11px;
+                        font-weight: 600; // Medium weight hierarchy
+                        color: rgba(255, 255, 255, 0.72);
+                        overflow: elide;
+                    }
+                    
+                    // Album (Secondary)
+                    if root.media-album != "": Text {
+                        text: root.media-album;
+                        font-size: 9px;
+                        font-weight: 700;
+                        color: rgba(255, 255, 255, 0.38);
+                        overflow: elide;
+                    }
+                }
+
+                TouchArea {
+                    width: 100%;
+                    height: 100%;
+                    pointer-event(evt) => {
+                        if evt.button == PointerEventButton.right && evt.kind == PointerEventKind.down {
+                            root.right-clicked(self.mouse-x + 131px, self.mouse-y + 4px);
+                        }
+                    }
+                }
+            }
+
+            // Sleek progress bar + under-times row
+            VerticalLayout {
+                spacing: 3px;
+                
+                // The Progress Bar line itself (with sliding progress)
+                Rectangle {
+                    height: 4px;
+                    background: rgba(255, 255, 255, 0.12);
+                    border-radius: 2px;
+
+                    // Filled part
+                    Rectangle {
+                        x: 0;
+                        width: parent.width * (root.media-pct / 100.0);
+                        height: 100%;
+                        background: white;
+                        border-radius: 2px;
+                    }
+
+                    // Glow indicator thumb centered at current position
+                    Rectangle {
+                        x: Math.max(0px, (parent.width * (root.media-pct / 100.0)) - 5px);
+                        y: -3px; // Center vertically on the line
+                        width: 10px;
+                        height: 10px;
+                        border-radius: 5px;
+                        background: white;
+                    }
+                }
+
+                // Times row underneath the progress bar
+                HorizontalLayout {
+                    alignment: space-between;
+                    Text {
+                        text: root.media-pos-str;
+                        font-size: 9px;
+                        font-weight: 600;
+                        color: rgba(255, 255, 255, 0.5);
+                    }
+                    Text {
+                        text: root.media-dur-str;
+                        font-size: 9px;
+                        font-weight: 600;
+                        color: rgba(255, 255, 255, 0.5);
+                    }
+                }
+            }
+
+            // Playback Controls centered and spaced like reference
+            HorizontalLayout {
+                alignment: center;
+                spacing: 18px;
+                height: 34px;
+
+                // 10s Backward Button
+                VerticalLayout {
+                    alignment: center;
+                    TouchArea {
+                        width: 18px; height: 18px;
+                        mouse-cursor: pointer;
+                        clicked => { root.seek-backward(); }
+                        Path {
+                            width: parent.has-hover ? 20px : 18px;
+                            height: parent.has-hover ? 20px : 18px;
+                            x: (parent.width - self.width) / 2;
+                            y: (parent.height - self.height) / 2;
+                            viewbox-width: 24; viewbox-height: 24;
+                            stroke: rgba(255, 255, 255, 0.78);
+                            stroke-width: 1.8px;
+                            fill: transparent;
+                            commands: "M 3 12 A 9 9 0 1 0 12 3 A 9.75 9.75 0 0 0 5.26 5.74 L 3 8 M 3 3 V 8 H 8";
+                            animate width, height { duration: 150ms; easing: cubic-bezier(0.34, 1.56, 0.64, 1); }
+                        }
+                        Text {
+                            text: "10";
+                            font-size: parent.has-hover ? 7px : 6px;
+                            font-weight: 800;
+                            color: rgba(255, 255, 255, 0.85);
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                            x: 0px;
+                            y: 0.5px;
+                            width: 100%;
+                            height: 100%;
+                            animate font-size { duration: 150ms; }
+                        }
+                    }
+                }
+
+                // Prev Button
+                VerticalLayout {
+                    alignment: center;
+                    TouchArea {
+                        width: 18px; height: 18px;
+                        mouse-cursor: pointer;
+                        clicked => { root.prev(); }
+                        Path {
+                            width: parent.has-hover ? 20px : 18px;
+                            height: parent.has-hover ? 20px : 18px;
+                            x: (parent.width - self.width) / 2;
+                            y: (parent.height - self.height) / 2;
+                            viewbox-width: 24; viewbox-height: 24;
+                            fill: rgba(255, 255, 255, 0.78);
+                            commands: "M 18 18 L 9 12 L 18 6 L 18 18 Z M 8 6 L 8 18 L 6 18 L 6 6 Z";
+                            animate width, height { duration: 150ms; easing: cubic-bezier(0.34, 1.56, 0.64, 1); }
+                        }
+                    }
+                }
+
+                // Play/Pause circular button matching reference design
+                VerticalLayout {
+                    alignment: center;
+                    play-area := TouchArea {
+                        width: 34px; height: 34px;
+                        mouse-cursor: pointer;
+                        clicked => {
+                            root.is-playing = !root.is-playing;
+                            root.play-pause();
+                        }
+                        Rectangle {
+                            width: play-area.has-hover ? 38px : 34px;
+                            height: play-area.has-hover ? 38px : 34px;
+                            x: (parent.width - self.width) / 2;
+                            y: (parent.height - self.height) / 2;
+                            border-radius: self.width / 2;
+                            background: play-area.has-hover ? rgba(255, 255, 255, 0.15) : rgba(255, 255, 255, 0.08);
+                            border-color: play-area.has-hover ? rgba(255, 255, 255, 0.3) : rgba(255, 255, 255, 0.18);
+                            border-width: 1px;
+                            drop-shadow-blur: 10px;
+                            drop-shadow-color: rgba(0, 0, 0, 0.25);
+                            drop-shadow-offset-y: 2px;
+
+                            animate width, height, background, border-color { duration: 150ms; easing: cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+                            if !root.is-playing: Path {
+                                x: (parent.width - self.width) / 2 + 1.5px;
+                                y: (parent.height - self.height) / 2;
+                                width: play-area.has-hover ? 15px : 13px;
+                                height: play-area.has-hover ? 15px : 13px;
+                                viewbox-width: 24; viewbox-height: 24;
+                                fill: white;
+                                commands: "M8 5.25v13.5L18.7 12 8 5.25Z";
+                                animate width, height { duration: 150ms; easing: cubic-bezier(0.34, 1.56, 0.64, 1); }
+                            }
+                            if root.is-playing: Path {
+                                x: (parent.width - self.width) / 2;
+                                y: (parent.height - self.height) / 2;
+                                width: play-area.has-hover ? 14px : 12px;
+                                height: play-area.has-hover ? 14px : 12px;
+                                viewbox-width: 24; viewbox-height: 24;
+                                fill: white;
+                                commands: "M6.5 5h4.2v14H6.5V5Zm6.8 0h4.2v14h-4.2V5Z";
+                                animate width, height { duration: 150ms; easing: cubic-bezier(0.34, 1.56, 0.64, 1); }
+                            }
+                        }
+                    }
+                }
+
+                // Next Button
+                VerticalLayout {
+                    alignment: center;
+                    TouchArea {
+                        width: 18px; height: 18px;
+                        mouse-cursor: pointer;
+                        clicked => { root.next(); }
+                        Path {
+                            width: parent.has-hover ? 20px : 18px;
+                            height: parent.has-hover ? 20px : 18px;
+                            x: (parent.width - self.width) / 2;
+                            y: (parent.height - self.height) / 2;
+                            viewbox-width: 24; viewbox-height: 24;
+                            fill: rgba(255, 255, 255, 0.78);
+                            commands: "M 6 18 L 15 12 L 6 6 L 6 18 Z M 16 6 L 16 18 L 18 18 L 18 6 Z";
+                            animate width, height { duration: 150ms; easing: cubic-bezier(0.34, 1.56, 0.64, 1); }
+                        }
+                    }
+                }
+
+                // 10s Forward Button
+                VerticalLayout {
+                    alignment: center;
+                    TouchArea {
+                        width: 18px; height: 18px;
+                        mouse-cursor: pointer;
+                        clicked => { root.seek-forward(); }
+                        Path {
+                            width: parent.has-hover ? 20px : 18px;
+                            height: parent.has-hover ? 20px : 18px;
+                            x: (parent.width - self.width) / 2;
+                            y: (parent.height - self.height) / 2;
+                            viewbox-width: 24; viewbox-height: 24;
+                            stroke: rgba(255, 255, 255, 0.78);
+                            stroke-width: 1.8px;
+                            fill: transparent;
+                            commands: "M 21 12 A 9 9 0 1 1 12 3 A 9.75 9.75 0 0 1 18.74 5.74 L 21 8 M 21 3 V 8 H 16";
+                            animate width, height { duration: 150ms; easing: cubic-bezier(0.34, 1.56, 0.64, 1); }
+                        }
+                        Text {
+                            text: "10";
+                            font-size: parent.has-hover ? 7px : 6px;
+                            font-weight: 800;
+                            color: rgba(255, 255, 255, 0.85);
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                            x: 0px;
+                            y: 0.5px;
+                            width: 100%;
+                            height: 100%;
+                            animate font-size { duration: 150ms; }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Waveform Visualizer inside the panel
+    Rectangle {
+        y: 154px;
+        height: (root.waveform-active && root.show-waveform) ? 32px : 0px;
+        opacity: (root.waveform-active && root.show-waveform) ? 1.0 : 0.0;
+        width: 100%;
+        clip: true;
+        animate height { duration: 250ms; easing: cubic-bezier(0.16, 1, 0.3, 1); }
+        animate opacity { duration: 200ms; easing: ease-out; }
+
+        HorizontalLayout {
+            width: 100%;
+            height: 100%;
+            alignment: center;
+            spacing: 4px;
+
+            for base-height[idx] in root.waveform-heights: Rectangle {
+                width: 4px;
+                height: (5.0 + (0.5 - 0.5 * Math.cos(((root.wave-time - root.waveform-delays[idx]) * 6.2831853 / root.waveform-durations[idx]) * 1rad)) * base-height) * 1px;
+                y: (32px - self.height) / 2;
+                border-radius: 2px;
+                background: rgba(255, 255, 255, 0.26 + (base-height / 27.0) * 0.45);
+            }
+        }
+    }
+}
+
+component LyricLineItem inherits Rectangle {
+    in property <string> text;
+    in property <bool> active;
+    
+    height: 32px;
+    width: 100%;
+    
+    Text {
+        text: root.text;
+        font-size: root.active ? 14px : 12px;
+        font-weight: root.active ? 800 : 600;
+        color: root.active ? #ffffff : rgba(255, 255, 255, 0.35);
+        horizontal-alignment: center;
+        vertical-alignment: center;
+        overflow: elide;
+        width: 100%;
+
+        animate font-size { duration: 150ms; easing: ease-out; }
+        animate color { duration: 150ms; easing: ease-out; }
+    }
+}
+
+export component RightLyricsPanel inherits Rectangle {
+    in property <[string]> lyrics-lines;
+    in property <int> active-lyric-index;
+    in property <bool> has-lyrics;
+    in property <string> lyrics-status;
+    in property <bool> premium-locked: false;
+    callback buy-license();
+
+    width: 260px;
+    height: 186px;
+    background: transparent;
+    border-width: 0px;
+    clip: true;
+
+    VerticalLayout {
+        opacity: root.premium-locked ? 0.28 : 1.0;
+        padding-left: 0px;
+        padding-right: 0px;
+        padding-top: 0px;
+        padding-bottom: 0px;
+        spacing: 0px;
+
+        // Header Row
+        HorizontalLayout {
+            height: 19px; alignment: space-between;
+            HorizontalLayout { spacing: 8px; alignment: center;
+                Path {
+                    width: 14px; height: 14px;
+                    viewbox-width: 24; viewbox-height: 24;
+                    fill: rgba(255, 255, 255, 0.6);
+                    commands: "M8.35 6.2c-1.87 1.34-2.8 2.88-2.8 4.62.2-.07.46-.1.8-.1.78 0 1.42.25 1.92.76.5.5.75 1.14.75 1.92 0 .84-.27 1.52-.82 2.06-.55.54-1.25.8-2.08.8-1.03 0-1.85-.39-2.46-1.17-.6-.79-.9-1.82-.9-3.1 0-3.07 1.4-5.55 4.2-7.45l1.39 1.66Zm10 0c-1.87 1.34-2.8 2.88-2.8 4.62.2-.07.46-.1.8-.1.78 0 1.42.25 1.92.76.5.5.75 1.14.75 1.92 0 .84-.27 1.52-.82 2.06-.55.54-1.25.8-2.08.8-1.03 0-1.85-.39-2.46-1.17-.6-.79-.9-1.82-.9-3.1 0-3.07 1.4-5.55 4.2-7.45l1.39 1.66Z";
+                }
+                Text { text: "LYRICS"; font-size: 10px; font-weight: 800; letter-spacing: 0.8px; color: rgba(255, 255, 255, 0.6); vertical-alignment: center; }
+            }
+        }
+
+        Rectangle { height: 4px; }
+        Rectangle { width: 100%; height: 1px; background: rgba(255, 255, 255, 0.08); }
+        Rectangle { height: 4px; }
+
+        // Content Area (Spotify-like scrolling list of lyrics)
+        Rectangle {
+            height: 158px;
+            width: 100%;
+            clip: true;
+
+            if root.has-lyrics: Rectangle {
+                width: 100%;
+                height: 100%;
+                
+                VerticalLayout {
+                    y: parent.height / 2 - root.active-lyric-index * 32px - 16px;
+                    spacing: 0px;
+                    width: 100%;
+
+                    animate y { duration: 300ms; easing: cubic-bezier(0.2, 0.8, 0.2, 1.0); }
+
+                    for line[idx] in root.lyrics-lines: LyricLineItem {
+                        text: line;
+                        active: idx == root.active-lyric-index;
+                    }
+                }
+            }
+
+            if !root.has-lyrics: VerticalLayout {
+                alignment: center;
+                Text {
+                    text: root.lyrics-status;
+                    font-size: 13px;
+                    font-weight: 700;
+                    color: rgba(255, 255, 255, 0.45);
+                    horizontal-alignment: center;
+                }
+            }
+        }
+    }
+
+    if root.premium-locked: Rectangle {
+        width: 100%;
+        height: 100%;
+        border-radius: 18px;
+        background: rgba(5, 6, 6, 0.82);
+        border-width: 1px;
+        border-color: rgba(52, 199, 89, 0.30);
+
+        VerticalLayout {
+            padding-left: 18px;
+            padding-right: 18px;
+            spacing: 8px;
+            alignment: center;
+
+            Text { text: "Trial period over"; font-size: 15px; font-weight: 900; color: white; horizontal-alignment: center; }
+            Text { text: "Lyrics are premium. Buy Raven Notch to unlock them."; font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.58); horizontal-alignment: center; wrap: word-wrap; }
+            HorizontalLayout {
+                width: 100%;
+                alignment: center;
+                Rectangle {
+                    width: 84px;
+                    height: 28px;
+                    border-radius: 14px;
+                    background: #34C759;
+                    Text { text: "Buy Now"; font-size: 10px; font-weight: 900; color: #061008; horizontal-alignment: center; vertical-alignment: center; }
+                    TouchArea { mouse-cursor: pointer; clicked => { root.buy-license(); } }
+                }
+            }
+        }
+    }
+}

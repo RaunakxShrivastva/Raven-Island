@@ -1,0 +1,232 @@
+export component StatsPanel inherits HorizontalLayout {
+    in property <float> cpu-pct;
+    in property <float> ram-pct;
+    in property <float> gpu-pct;
+
+    in property <string> cpu-path-data;
+    in property <string> cpu-fill-data;
+
+    in property <string> ram-path-data;
+    in property <string> ram-fill-data;
+
+    in property <string> gpu-path-data;
+    in property <string> gpu-fill-data;
+
+    spacing: 12px;
+    height: 100%;
+    padding-top: 4px;
+    padding-bottom: 4px;
+
+    // CPU Card
+    Rectangle {
+        horizontal-stretch: 1;
+        border-radius: 12px;
+        background: rgba(10, 10, 10, 0.95);
+        border-width: 1px;
+        border-color: rgba(255, 255, 255, 0.06);
+
+        VerticalLayout {
+            padding: 12px;
+            spacing: 8px;
+
+            // Top Header: Label + Usage Pct
+            HorizontalLayout {
+                alignment: space-between;
+                height: 20px;
+
+                HorizontalLayout {
+                    spacing: 6px;
+                    alignment: start;
+                    Image {
+                        width: 14px;
+                        height: 14px;
+                        source: @image-url("../assets/cpu-icon.svg");
+                        colorize: #30B0FF; // Premium blue
+                        y: (parent.height - self.height) / 2;
+                    }
+                    Text {
+                        text: "CPU";
+                        font-size: 13px;
+                        font-weight: 800;
+                        color: white;
+                        vertical-alignment: center;
+                    }
+                }
+
+                Text {
+                    text: round(root.cpu-pct * 10) / 10.0 + "%";
+                    font-size: 13px;
+                    font-weight: 800;
+                    color: white;
+                    vertical-alignment: center;
+                }
+            }
+
+            // Real-time Historical Graph
+            Rectangle {
+                horizontal-stretch: 1;
+                vertical-stretch: 1;
+                clip: true;
+
+                // Gradient area fill
+                Path {
+                    width: 100%;
+                    height: 100%;
+                    fill: @linear-gradient(180deg, rgba(48, 176, 255, 0.22) 0%, rgba(48, 176, 255, 0) 100%);
+                    commands: root.cpu-fill-data;
+                }
+
+                // Stroke line
+                Path {
+                    width: 100%;
+                    height: 100%;
+                    stroke: #30B0FF;
+                    stroke-width: 2.2px;
+                    commands: root.cpu-path-data;
+                }
+            }
+        }
+    }
+
+    // Memory (RAM) Card
+    Rectangle {
+        horizontal-stretch: 1;
+        border-radius: 12px;
+        background: rgba(10, 10, 10, 0.95);
+        border-width: 1px;
+        border-color: rgba(255, 255, 255, 0.06);
+
+        VerticalLayout {
+            padding: 12px;
+            spacing: 8px;
+
+            // Top Header: Label + Usage Pct
+            HorizontalLayout {
+                alignment: space-between;
+                height: 20px;
+
+                HorizontalLayout {
+                    spacing: 6px;
+                    alignment: start;
+                    Image {
+                        width: 14px;
+                        height: 14px;
+                        source: @image-url("../assets/memory-icon.svg");
+                        colorize: #30D158; // Premium green
+                        y: (parent.height - self.height) / 2;
+                    }
+                    Text {
+                        text: "Memory";
+                        font-size: 13px;
+                        font-weight: 800;
+                        color: white;
+                        vertical-alignment: center;
+                    }
+                }
+
+                Text {
+                    text: round(root.ram-pct * 10) / 10.0 + "%";
+                    font-size: 13px;
+                    font-weight: 800;
+                    color: white;
+                    vertical-alignment: center;
+                }
+            }
+
+            // Real-time Historical Graph
+            Rectangle {
+                horizontal-stretch: 1;
+                vertical-stretch: 1;
+                clip: true;
+
+                // Gradient area fill
+                Path {
+                    width: 100%;
+                    height: 100%;
+                    fill: @linear-gradient(180deg, rgba(48, 209, 88, 0.22) 0%, rgba(48, 209, 88, 0) 100%);
+                    commands: root.ram-fill-data;
+                }
+
+                // Stroke line
+                Path {
+                    width: 100%;
+                    height: 100%;
+                    stroke: #30D158;
+                    stroke-width: 2.2px;
+                    commands: root.ram-path-data;
+                }
+            }
+        }
+    }
+
+    // GPU Card
+    Rectangle {
+        horizontal-stretch: 1;
+        border-radius: 12px;
+        background: rgba(10, 10, 10, 0.95);
+        border-width: 1px;
+        border-color: rgba(255, 255, 255, 0.06);
+
+        VerticalLayout {
+            padding: 12px;
+            spacing: 8px;
+
+            // Top Header: Label + Usage Pct
+            HorizontalLayout {
+                alignment: space-between;
+                height: 20px;
+
+                HorizontalLayout {
+                    spacing: 6px;
+                    alignment: start;
+                    Image {
+                        width: 14px;
+                        height: 14px;
+                        source: @image-url("../assets/gpu-icon.svg");
+                        colorize: #BF5AF2; // Premium purple/magenta
+                        y: (parent.height - self.height) / 2;
+                    }
+                    Text {
+                        text: "GPU";
+                        font-size: 13px;
+                        font-weight: 800;
+                        color: white;
+                        vertical-alignment: center;
+                    }
+                }
+
+                Text {
+                    text: round(root.gpu-pct * 10) / 10.0 + "%";
+                    font-size: 13px;
+                    font-weight: 800;
+                    color: white;
+                    vertical-alignment: center;
+                }
+            }
+
+            // Real-time Historical Graph
+            Rectangle {
+                horizontal-stretch: 1;
+                vertical-stretch: 1;
+                clip: true;
+
+                // Gradient area fill
+                Path {
+                    width: 100%;
+                    height: 100%;
+                    fill: @linear-gradient(180deg, rgba(191, 90, 242, 0.22) 0%, rgba(191, 90, 242, 0) 100%);
+                    commands: root.gpu-fill-data;
+                }
+
+                // Stroke line
+                Path {
+                    width: 100%;
+                    height: 100%;
+                    stroke: #BF5AF2;
+                    stroke-width: 2.2px;
+                    commands: root.gpu-path-data;
+                }
+            }
+        }
+    }
+}

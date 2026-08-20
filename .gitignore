@@ -1,0 +1,79 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+dist/
+dist-ssr/
+*.local
+
+# Rust
+target/
+**/*.rs.bk
+
+# Tauri
+src-tauri/target/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+logs/
+*.log
+
+# Workspace specific
+.gemini/
+.claude/
+.code-review-graph/
+target-fresh-rust/
+
+# Scratch & Temporary Binaries
+*.exe
+!website/Raven-Notch.exe
+*.pdb
+raven-native/test2.rs
+raven-native/test3.rs
+raven-native/test_slint.rs
+Atoll-2.1.0.tar.gz
+
+# Local References
+atoll-reference/
+atoll-extracted/
+
+# Cache, logs, and tool artifacts
+.wrangler/
+flameshot-13.3.0/
+new-widget/
+fullscreen_debug.txt
+raven-native/all_step_*.json
+raven-native/step_*.json
+raven-native/compile_error*.txt
+raven-native/recovered_*.txt
+raven-native/scratch/
+raven-native/scratch_output.txt
+*.mp4
+
+# Temp upload/download dirs
+.tmp.driveupload/
+.tmp.drivedownload/
+
+# Agent-generated docs (keep local, not public)
+docs/brain.md
+docs/history.md
+docs/structure.md
+docs/CLAUDE.md
+
+# Agent debug artifacts
+raven-native/main_reconstructed.rs
+raven-native/diff_*.txt
+raven-native/focusbar_debug_trace.log
+raven-native/settings_head.slint
+.graphify_*
+
+# Test media you don't want to ship
+raven-native/test vid/
