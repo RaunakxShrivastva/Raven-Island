@@ -366,6 +366,10 @@
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         const card = entry.target;
+        if (card.id === 'downloadsKpiCard') {
+          observer.unobserve(card);
+          return;
+        }
         const countEl = card.querySelector('[data-animate]');
         if (countEl) {
           countEl.dataset.animated = 'true';
@@ -565,6 +569,72 @@
     document.getElementById('downloadBtnMobile')
   ];
 
+  const downloadCountEl = document.getElementById('kpiDownloadsCount');
+  const visitorStorageKey = 'raven-download-counter-id';
+  let displayedDownloadCount = 0;
+
+  function updateDownloadCount(value, animate = false) {
+    if (!downloadCountEl || !Number.isFinite(Number(value))) return;
+    displayedDownloadCount = Math.max(displayedDownloadCount, Number(value));
+    const target = displayedDownloadCount;
+    const start = parseInt(downloadCountEl.textContent, 10) || 0;
+
+    if (!animate || start === target) {
+      downloadCountEl.textContent = target;
+      return;
+    }
+
+    const startTime = performance.now();
+    function frame(now) {
+      const progress = Math.min((now - startTime) / 600, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      downloadCountEl.textContent = Math.round(start + (target - start) * eased);
+      if (progress < 1) requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  function getVisitorId() {
+    try {
+      let visitorId = localStorage.getItem(visitorStorageKey);
+      if (!visitorId) {
+        visitorId = crypto.randomUUID();
+        localStorage.setItem(visitorStorageKey, visitorId);
+      }
+      return visitorId;
+    } catch {
+      return null;
+    }
+  }
+
+  function recordDownloadClick() {
+    const visitorId = getVisitorId();
+    if (!visitorId) return;
+
+    fetch('/api/download-count', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ visitorId }),
+      keepalive: true
+    })
+      .then(response => response.ok ? response.json() : null)
+      .then(data => {
+        if (data && Number.isFinite(Number(data.total))) {
+          updateDownloadCount(data.total, true);
+        }
+      })
+      .catch(() => {});
+  }
+
+  fetch('/api/download-count')
+    .then(response => response.ok ? response.json() : null)
+    .then(data => {
+      if (data && Number.isFinite(Number(data.total))) {
+        updateDownloadCount(data.total);
+      }
+    })
+    .catch(() => {});
+
   // Set up download overlay handlers
   if (downloadOverlay) {
     downloadOverlay.addEventListener('click', () => {
@@ -575,35 +645,7 @@
   downloadBtns.forEach(btn => {
     if (!btn) return;
     btn.addEventListener('click', (e) => {
-      // Increment client-side download counter dynamically
-      const downloadCountEl = document.getElementById('kpiDownloadsCount');
-      console.log('Download clicked! downloadCountEl:', downloadCountEl);
-      if (downloadCountEl) {
-        const currentTarget = parseInt(downloadCountEl.getAttribute('data-animate')) || 0;
-        const newTarget = currentTarget + 1;
-        console.log('Incrementing target from', currentTarget, 'to', newTarget, 'Animated status:', downloadCountEl.dataset.animated);
-        downloadCountEl.setAttribute('data-animate', newTarget);
-
-        const currentVal = parseInt(downloadCountEl.textContent) || 0;
-        if (downloadCountEl.dataset.animated === 'true') {
-          // Smooth count-up animation
-          const startTime = performance.now();
-          const duration = 600;
-          function frame(now) {
-            const elapsed = now - startTime;
-            const progress = Math.min(elapsed / duration, 1);
-            const eased = 1 - Math.pow(1 - progress, 3); // ease-out-cubic
-            downloadCountEl.textContent = Math.round(currentVal + (newTarget - currentVal) * eased);
-            if (progress < 1) {
-              requestAnimationFrame(frame);
-            }
-          }
-          requestAnimationFrame(frame);
-        } else {
-          // If not animated yet, set text directly so it counts up from it when intersected
-          downloadCountEl.textContent = newTarget;
-        }
-      }
+      recordDownloadClick();
 
       if (downloadOverlay) {
         downloadOverlay.classList.add('show');

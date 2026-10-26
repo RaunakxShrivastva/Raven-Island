@@ -85,6 +85,11 @@ CREATE TABLE IF NOT EXISTS account_devices (
   FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
+CREATE TABLE IF NOT EXISTS download_visitors (
+  visitor_hash TEXT PRIMARY KEY,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
 CREATE INDEX IF NOT EXISTS idx_licenses_key ON licenses (license_key);
 CREATE INDEX IF NOT EXISTS idx_licenses_device ON licenses (device_id);
 CREATE INDEX IF NOT EXISTS idx_trials_device ON trials (device_id);
